@@ -1,4 +1,4 @@
-const mongoos = require('mongoos')
+const mongoos = require('mongoose')
 const { type } = require('os')
 
 const userSchema = new mongoos.schema({

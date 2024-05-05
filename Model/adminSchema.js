@@ -1,4 +1,4 @@
-const mongoos = require('mongoos')
+const mongoos = require('mongoose')
 
 
 
@@ -23,4 +23,4 @@ const adminSchema = new mongoos.schema({
     }
 })
 
-module.exports=mongoos.model("adminSchema",adminSchema)
+module.exports=mongoos.model("AdminSchema",adminSchema)
