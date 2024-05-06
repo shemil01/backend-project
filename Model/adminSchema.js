@@ -3,7 +3,7 @@ const mongoos = require('mongoose')
 
 
 
-const adminSchema = new mongoos.schema({
+const adminSchema = new mongoos.Schema({
 
     email:{
         type:String,

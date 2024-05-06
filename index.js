@@ -1,18 +1,22 @@
-const express = require('express')
-const path = require('path')
-const jwt = require('jsonwebtoken')
-const multer = require('multer')
-const cors = require('cors')
-const produc=require('./Model/product')
+const express = require("express");
+const path = require("path");
+const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const cors = require("cors");
+const product = require("./Model/product");
+const DbConnect = require("./Config/DbConnection");
+const adminRoute= require("./Routes/adminRout")
 
-const app = express()
-const port = 3010
+const adminSchema = require("./Model/AdminSchema");
+
+const app = express();
+const port = 3010;
+
+app.use(express.json());
+app.use("/api",adminRoute)
 
 
-
-app.use(express.json())
-
-
-app.listen(port,()=>{
-    console.log(`your app is listening port:${port}`);
-})
+DbConnect();
+app.listen(port, () => {
+  console.log(`your app is listening port:${port}`);
+});
