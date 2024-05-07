@@ -5,16 +5,20 @@ const multer = require("multer");
 const cors = require("cors");
 const product = require("./Model/product");
 const DbConnect = require("./Config/DbConnection");
-const adminRoute= require("./Routes/adminRout")
+const adminRoute = require("./Routes/adminRout");
+const dotenv = require("dotenv");
 
 const adminSchema = require("./Model/AdminSchema");
 
 const app = express();
 const port = 3010;
 
-app.use(express.json());
-app.use("/api",adminRoute)
+dotenv.config({path:'./Config/.env'})
 
+app.use(express.json());
+// app.use(dotenv.config("./Config/.env"));
+
+app.use("/api", adminRoute);
 
 DbConnect();
 app.listen(port, () => {
