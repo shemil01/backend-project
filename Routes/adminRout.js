@@ -11,6 +11,7 @@ adminRoutes.post("/admin/login",tryCatch(controller.getAdmin))
 adminRoutes.get('/admin/allproduct',tryCatch(adminController.viewProduct))
 adminRoutes.get("/admin/productbyid",tryCatch(adminController.viewProductById))
 adminRoutes.get("/admin/productcategory",tryCatch(adminController.productByCategory))
+adminRoutes.post("/admin/addproduct",tryCatch(adminController.addProduct))
 
 
 

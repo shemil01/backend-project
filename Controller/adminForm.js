@@ -1,6 +1,8 @@
 const productSchema=require('../Model/product')
 const {tryCatch} = require('../Utils/tryCatch')
 const joi = require('joi')
+const cloudinary = require('cloudinary').v2
+const createError=require('http-errors')
 
 //joi validation
 const schema =joi.object({
@@ -63,4 +65,40 @@ const productByCategory = tryCatch(async(req,res)=>{
         res.status(200).json(productInCategory)
     }
 })
-module.exports = {viewProduct,viewProductById,productByCategory}
+
+//add product
+const addProduct = async (req, res, next) => {
+    try {
+        const data = req.body;
+        data.image = req.cloudinaryImageUrl;
+        
+        // Validate request data using Joi schema
+        const validate = await schema.validate(data);
+        if (validate.error) {
+            const errorMessage = validate.error.details[0].message;
+            return next(createError.BadRequest(errorMessage));
+        }
+
+        // Create a new product instance
+        const newProduct = await new productSchema({
+            title: data.title,
+            price: data.price,
+            category: data.category,
+            image: req.cloudinaryImageUrl
+        });
+
+        // Save the new product to the database
+        await newProduct.save();
+
+        // Send success response
+        res.status(200).send("New product added successfully");
+    } catch (error) {
+        // Handle errors
+        console.error(error);
+        next(error); // Pass error to error handling middleware
+    }
+};
+
+
+
+module.exports = {viewProduct,viewProductById,productByCategory,addProduct}
