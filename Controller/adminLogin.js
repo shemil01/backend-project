@@ -11,17 +11,32 @@ const getAdmin = async (req, res) => {
     if (!admin) {
       return res.status(404).send("Admin not found");
     }
-console.log(bcrypt.hashSync("12345",10));
+
     const passwordMatch = await bcrypt.compare(password, admin.password);
     if (!passwordMatch) {
       return res.status(401).send("Incorrect password");
     }
 
-    console.log(process.env.ACCESS_TOKEN_SECRET);
-    // const token = jwt.sign(
-    //   { email: admin.email },
-    //   process.env.ACCESS_TOKEN_SECRET
-    // );
+    const token = jwt.sign(
+      { email: admin.email },
+      process.env.ACCESS_TOKEN_SECRET,
+      {
+        expiresIn:"1m"
+      }
+    );
+    const refreshToken = jwt.sign({email:admin.email},
+      process.env.REFRESH_TOKEN_SECRET,{
+        expiresIn:"7d"
+      }
+    )
+    res.cookie("token", accessToken, {
+      expires: new Date(Date.now() + 60 * 1000)
+  });
+  res.cookie("refreshToken", refreshToken, { maxAge: 7 * 24 * 60 * 60 * 1000 });
+  return res.status(200).json({ status: "success", message: "Logged in" });
+
+
+  
     res.json({ message: "Login successful" });
   } catch (error) {
     console.error(error);
