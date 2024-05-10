@@ -72,7 +72,7 @@ const productByCategory = tryCatch(async (req, res) => {
 const addProduct = tryCatch(async (req, res) => {
   const data = req.body;
    data.image = req.cloudinaryImageUrl 
- 
+//  console.log( req.cloudinaryImageUrl);
   const { name, description, price, image, category } = data;
   const validate = await schema.validate(data);
   if (!validate) {
@@ -91,9 +91,8 @@ const addProduct = tryCatch(async (req, res) => {
     name: data.name,
     price: data.price,
     category: data.category,
-    image: req.cloudinaryImageUrl,
+    image:req.cloudinaryImageUrl
   });
-
   await newProduct.save();
   res.status(200).send("Product added successfully compleated");
 });
