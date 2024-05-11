@@ -5,7 +5,7 @@ const { tryCatch } = require("../Utils/tryCatch");
 const joi = require("joi");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-
+const cartSchema = require('../Model/CartSchema')
 //joi validation for user
 
 const userValidation = joi.object({
@@ -136,7 +136,7 @@ const viewProduct = tryCatch(async(req,res)=>{
 const productByCategory = tryCatch(async(req,res)=>{
   const category = req.params.id
   const productInCategory = await productSchema.aggregate([{
-    $amtch:{category:category}
+    $match:{category:category}
   }])
   if(productInCategory.length ===0){
     res.status(400).json({
@@ -147,6 +147,24 @@ const productByCategory = tryCatch(async(req,res)=>{
     res.status(200).json(productInCategory)
   }
 })
+//add to cart
 
+const addToCart = tryCatch(async(req,res)=>{
+ const {productId} = req.body
+ const {token} = req.cookies
+ const decode = jwt.verify(token,process.env.ACCES_TOKEN_SECRET)
+ const user = await cartSchema.findOne({userId:decode.userId})
+if(!user){
+  const newCart = new cartSchema({
+    userId:decode.userId,
+    cart:[{product:productId}]
+  })
+  await newCart.save()
+  res.status(200).json({
+    success:true,
+    message:"Product added to cart"
+  })
+}
+})
 
 module.exports = { userRegister, userLogin,viewProduct ,productByCategory};
