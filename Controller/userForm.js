@@ -1,13 +1,13 @@
 const userSchema = require("../Model/UserSchema");
-const productSchema = require('../Model/product')
+const productSchema = require("../Model/product");
 const bcrypt = require("bcryptjs");
 const { tryCatch } = require("../Utils/tryCatch");
 const joi = require("joi");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-const cartSchema = require('../Model/CartSchema')
-//joi validation for user
+const cartSchema = require("../Model/CartSchema");
 
+//joi validation for user
 const userValidation = joi.object({
   name: joi.string().required().messages({
     "string.base": "Name is required",
@@ -24,7 +24,6 @@ const userValidation = joi.object({
     "string.base": "password is required",
   }),
 });
-
 
 //joi validation for product
 const schema = joi.object({
@@ -46,7 +45,6 @@ const schema = joi.object({
   }),
 });
 
-
 //user registration
 const userRegister = tryCatch(async (req, res) => {
   const { email, name, password } = req.body;
@@ -65,7 +63,7 @@ const userRegister = tryCatch(async (req, res) => {
 
   //password bcrypt
 
-  const hashPassword = await bcrypt.hash(password, 10);
+  const hashPassword = await bcrypt.hash(String(password), 10);
   //save user
   const user = await userSchema.create({
     name,
@@ -74,7 +72,7 @@ const userRegister = tryCatch(async (req, res) => {
   });
   //generat token
 
-  const token = jwt.sign({ id: user._id }, "shhhss", {
+  const token = jwt.sign({ id: user._id }, process.env.jwt_secret, {
     expiresIn: "2h",
   });
   user.token = token;
@@ -92,11 +90,14 @@ const userLogin = tryCatch(async (req, res) => {
   const userData = await userSchema.findOne({ email });
   if (!userData) {
     return res.status(400).json({
-        success:false,
-        message:"User not  found"
+      success: false,
+      message: "User not  found",
     });
   }
-  const passwordMatch = await bcrypt.compare(password, userData.password);
+  const passwordMatch = await bcrypt.compare(
+    String(password),
+    userData.password
+  );
 
   if (!passwordMatch) {
     return res.status(400).json({
@@ -109,62 +110,106 @@ const userLogin = tryCatch(async (req, res) => {
     expiresIn: "2h",
   });
 
-  res.cookies = token;
+  // res.cookies = token;
   res.status(200).json({
+    toket: token,
     userData: userData,
     message: "login successfull",
   });
 });
 
-//view product 
-const viewProduct = tryCatch(async(req,res)=>{
-  const product = await productSchema.find()
-  if(product.length === 0){
+//logout
+const userLogout = tryCatch(async (req, res) => {
+  const data = req.body;
+
+  res.clearCookie("token");
+  res.status(200).json({
+    success: true,
+    message: "Logout successfully",
+  });
+});
+
+//view product
+const viewProduct = tryCatch(async (req, res) => {
+  const product = await productSchema.find();
+  if (product.length === 0) {
     res.status(400).json({
+      success: false,
+      message: "Product is empty",
+    });
+  } else {
+    res.status(200).json(product);
+  }
+});
+
+//view product by Id
+const productById = tryCatch(async (req,res)=>{
+  const productId = req.params.id
+  const product = await productSchema.findById(productId)
+  if(!product){
+    res.status(401).json({
       success:false,
-      message:"Product is empty"
+      message:"Product not found"
     })
   }
-  else{
-    res.status(200).json(product)
-  }
+  res.status(200).json(product)
 })
 
 //view product by category
 
-
-const productByCategory = tryCatch(async(req,res)=>{
-  const category = req.params.id
-  const productInCategory = await productSchema.aggregate([{
-    $match:{category:category}
-  }])
-  if(productInCategory.length ===0){
+const productByCategory = tryCatch(async (req, res) => {
+  const category = req.params.id;
+  const productInCategory = await productSchema.aggregate([
+    {
+      $match: { category: category },
+    },
+  ]);
+  if (productInCategory.length === 0) {
     res.status(400).json({
-      success:false,
-      message:"Product not found in specified category"
-    })
-  }else{
-    res.status(200).json(productInCategory)
+      success: false,
+      message: "Product not found in specified category",
+    });
+  } else {
+    res.status(200).json(productInCategory);
   }
-})
+});
 //add to cart
 
-const addToCart = tryCatch(async(req,res)=>{
- const {productId} = req.body
- const {token} = req.cookies
- const decode = jwt.verify(token,process.env.ACCES_TOKEN_SECRET)
- const user = await cartSchema.findOne({userId:decode.userId})
-if(!user){
-  const newCart = new cartSchema({
-    userId:decode.userId,
-    cart:[{product:productId}]
-  })
-  await newCart.save()
+const addToCart = tryCatch(async (req, res) => {
+  const { productId, userId, quantity } = req.body;
+
+  let Cart = await cartSchema.findOne({ userId });
+  console.log(productId);
+  if (!Cart) {
+    Cart = new cartSchema({
+      userId,
+      cart: [{ productId: productId, quantity: quantity }],
+    });
+  } else {
+    const itemIndex = Cart.cart.findIndex((item) => item.id === productId);
+    if (itemIndex !== -1) {
+      Cart.cart[itemIndex].quantity += quantity;
+    } else {
+      Cart.cart.push({ productId, quantity });
+    }
+  }
+  await Cart.save();
   res.status(200).json({
-    success:true,
-    message:"Product added to cart"
-  })
-}
+    success: true,
+    message: "Product added to cart",
+  });
+});
+
+//product to wish list 
+const addToWishlist = tryCatch(async(req,res)=>{
+  
 })
 
-module.exports = { userRegister, userLogin,viewProduct ,productByCategory};
+module.exports = {
+  userRegister,
+  userLogin,
+  viewProduct,
+  productByCategory,
+  productById,
+  addToCart,
+};

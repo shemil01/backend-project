@@ -3,7 +3,7 @@ const { tryCatch } = require("../Utils/tryCatch");
 const joi = require("joi");
 const cloudinary = require("cloudinary").v2;
 const createError = require("http-errors");
-
+const UserSchema = require("../Model/UserSchema");
 
 //joi validation
 const schema = joi.object({
@@ -24,6 +24,33 @@ const schema = joi.object({
     "category.base": "category musst be a string",
   }),
 });
+
+//view all users
+const allUsers = tryCatch(async (req, res) => {
+  const users = await UserSchema.find();
+  if (users.length === 0) {
+    res.status(401).json({
+      success: true,
+      message: "Users is empty",
+    });
+  } else {
+    res.status(201).json(users);
+  }
+});
+
+//view users by id
+const userById = tryCatch(async(req,res)=>{
+  const userId = req.params.id
+  const user = await UserSchema.findById(userId)
+  if(!user){
+    res.status(401).json({
+      success:false,
+      message:"User not found the specified id"
+    })
+  }else{
+    res.status(201).json(user)
+  }
+})
 
 //view all products
 
@@ -71,12 +98,11 @@ const productByCategory = tryCatch(async (req, res) => {
 //add product
 const addProduct = tryCatch(async (req, res) => {
   const data = req.body;
-   data.image = req.cloudinaryImageUrl 
-//  console.log( req.cloudinaryImageUrl);
+  data.image = req.cloudinaryImageUrl;
+  //  console.log( req.cloudinaryImageUrl);
   const { name, description, price, image, category } = data;
   const validate = await schema.validate(data);
   if (!validate) {
-    
     res.status(400).send("Product not validated");
   }
   const existingProduct = await productSchema.findOne({ name: name });
@@ -86,12 +112,12 @@ const addProduct = tryCatch(async (req, res) => {
       message: "Product with same name is already exist",
     });
   }
-  
+
   const newProduct = await new productSchema({
     name: data.name,
     price: data.price,
     category: data.category,
-    image:req.cloudinaryImageUrl
+    image: req.cloudinaryImageUrl,
   });
   await newProduct.save();
   res.status(200).send("Product added successfully compleated");
@@ -99,58 +125,56 @@ const addProduct = tryCatch(async (req, res) => {
 
 //update product
 
-const updateProduct = tryCatch(async(req,res)=>{
- const {id} = req.params
+const updateProduct = tryCatch(async (req, res) => {
+  const { id } = req.params;
 
- const data = req.body
- const {name,category,description,price ,image}= data
- const {error} = schema.validate(data)
- if(error){
-    res.status(400).send({message:error.details[0].message})
- }
- const product =await productSchema.findById(id)
- 
- 
- if(!product){
-    return res.status(404).json({success:false,
-        message:"Product not found "
-    })
- }
- product.image=req.cloudinaryImageUrl
- 
+  const data = req.body;
+  const { name, category, description, price, image } = data;
+  const { error } = schema.validate(data);
+  if (error) {
+    res.status(400).send({ message: error.details[0].message });
+  }
+  const product = await productSchema.findById(id);
+
+  if (!product) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Product not found " });
+  }
+  product.image = req.cloudinaryImageUrl;
+
   await productSchema.findByIdAndUpdate(
-    {_id:id},{
-        name:name,
-        category:category,
-        image:req.cloudinaryImageUrl,
-        price:price,
-        description:description
+    { _id: id },
+    {
+      name: name,
+      category: category,
+      image: req.cloudinaryImageUrl,
+      price: price,
+      description: description,
     }
- )
- res.status(201).json({
-    success:true,
-    message:"Product updated "
- })
-
-})
+  );
+  res.status(201).json({
+    success: true,
+    message: "Product updated ",
+  });
+});
 //Delete product
 const deleteProduct = tryCatch(async (req, res) => {
-    const { id } = req.params;
-    console.log(id);
-    const deleted = await productSchema.findByIdAndDelete(id);
-    if (!deleted) {
-        return res.status(404).json({
-            success: false,
-            message: "Product not found"
-        });
-    }
-    // If the code reaches here, it means the product was successfully deleted
-    res.status(200).json({
-        success: true,
-        message: "Product deleted successfully"
+  const { id } = req.params;
+  console.log(id);
+  const deleted = await productSchema.findByIdAndDelete(id);
+  if (!deleted) {
+    return res.status(404).json({
+      success: false,
+      message: "Product not found",
     });
+  }
+  // If the code reaches here, it means the product was successfully deleted
+  res.status(200).json({
+    success: true,
+    message: "Product deleted successfully",
+  });
 });
-
 
 module.exports = {
   viewProduct,
@@ -158,5 +182,7 @@ module.exports = {
   productByCategory,
   addProduct,
   updateProduct,
-  deleteProduct               
+  deleteProduct,
+  allUsers,
+  userById
 };
