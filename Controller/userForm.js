@@ -6,6 +6,7 @@ const joi = require("joi");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const cartSchema = require("../Model/CartSchema");
+const whishListSchema = require('../Model/wishListSchema')
 
 //joi validation for user
 const userValidation = joi.object({
@@ -200,7 +201,7 @@ const addToCart = tryCatch(async (req, res) => {
   });
 });
 
-//product to wish list 
+//product to wishlist 
 const addToWishlist = tryCatch(async(req,res)=>{
   
 })
