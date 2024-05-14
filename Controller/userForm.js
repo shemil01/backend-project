@@ -6,7 +6,9 @@ const joi = require("joi");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const cartSchema = require("../Model/CartSchema");
-const whishListSchema = require('../Model/wishListSchema')
+const whishListSchema = require('../Model/wishListSchema');
+const cloudinary = require("cloudinary").v2;
+
 
 //joi validation for user
 const userValidation = joi.object({
@@ -26,29 +28,12 @@ const userValidation = joi.object({
   }),
 });
 
-//joi validation for product
-const schema = joi.object({
-  name: joi.string().messages({
-    "name.empty": "name is required",
-  }),
-  price: joi.number().messages({
-    "price.base": "price must be number",
-  }),
-  description: joi.string().messages({
-    "description.base": "Description must be string",
-    "description.empty": "Description cannot empty",
-  }),
-  image: joi.string().messages({
-    "image.base": "image url must be string ",
-  }),
-  category: joi.string().messages({
-    "category.base": "category musst be a string",
-  }),
-});
+
 
 //user registration
 const userRegister = tryCatch(async (req, res) => {
   const { email, name, password } = req.body;
+  console.log(req.body);
   const validate = await userValidation.validate({ email, name, password });
   if (!validate) {
     res.status(400).send("Error");
@@ -70,8 +55,11 @@ const userRegister = tryCatch(async (req, res) => {
     name,
     email,
     password: hashPassword,
+    profailPic: req.cloudinaryImageUrl
+    
   });
-  //generat token
+  console.log(req.cloudinaryImageUrl);
+  //generate token
 
   const token = jwt.sign({ id: user._id }, process.env.jwt_secret, {
     expiresIn: "2h",
@@ -113,22 +101,22 @@ const userLogin = tryCatch(async (req, res) => {
 
   // res.cookies = token;
   res.status(200).json({
-    toket: token,
+    token: token,
     userData: userData,
     message: "login successfull",
   });
 });
 
-//logout
-const userLogout = tryCatch(async (req, res) => {
-  const data = req.body;
+// //logout
+// const userLogout = tryCatch(async (req, res) => {
+//   const data = req.body;
 
-  res.clearCookie("token");
-  res.status(200).json({
-    success: true,
-    message: "Logout successfully",
-  });
-});
+//   res.clearCookie("token");
+//   res.status(200).json({
+//     success: true,
+//     message: "Logout successfully",
+//   });
+// });
 
 //view product
 const viewProduct = tryCatch(async (req, res) => {
@@ -203,7 +191,27 @@ const addToCart = tryCatch(async (req, res) => {
 
 //product to wishlist 
 const addToWishlist = tryCatch(async(req,res)=>{
-  
+  const {productId,userId} =  req.body;
+  let addWishList = await whishListSchema.findOne({userId})
+
+  if(!addWishList){
+  addWishList = new wishListSchema({
+      userId,
+      wishlist:[{productId:productId}]
+    })
+  }else {
+    const itemIndex = addWishList.wishlist.findIndex((item)=>item.productId == productId)
+    if(itemIndex !== -1){
+      res.send("Product already exist in wishlist")
+    }else{
+      addWishList.wishlist.push({productId})
+    }
+    await addWishList.save()
+    res.status(200).json({
+      success:true,
+      message:"Product added to wishlist"
+    })
+  }
 })
 
 module.exports = {
@@ -213,4 +221,5 @@ module.exports = {
   productByCategory,
   productById,
   addToCart,
+  addToWishlist
 };

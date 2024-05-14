@@ -1,4 +1,5 @@
-const mongoose = require;
+const mongoose = require('mongoose');
+
 
 const wishlist = mongoose.Schema({
   userId: {
@@ -10,7 +11,7 @@ const wishlist = mongoose.Schema({
 
   wishlist: [
     {
-      product: {
+      productId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Product",
         required: true,
