@@ -6,34 +6,25 @@ const joi = require("joi");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const cartSchema = require("../Model/CartSchema");
-const whishListSchema = require('../Model/wishListSchema');
-const cloudinary = require("cloudinary").v2;
-
+const whishListSchema = require("../Model/wishListSchema");
 
 //joi validation for user
 const userValidation = joi.object({
   name: joi.string().required().messages({
     "string.base": "Name is required",
   }),
-  email: joi
-    .string()
-    .email()
-    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
-    .messages({
-      "string.base": "Email is required",
-      "string.pattern.base": "Email must be in format",
-    }),
+  email: joi.string().email().messages({
+    "string.base": "Email is required",
+    "string.pattern.base": "Email must be in format",
+  }),
   password: joi.string().messages({
     "string.base": "password is required",
   }),
 });
 
-
-
 //user registration
-const userRegister = tryCatch(async (req, res) => {
+const userRegister = async (req, res) => {
   const { email, name, password } = req.body;
-  console.log(req.body);
   const validate = await userValidation.validate({ email, name, password });
   if (!validate) {
     res.status(400).send("Error");
@@ -55,10 +46,8 @@ const userRegister = tryCatch(async (req, res) => {
     name,
     email,
     password: hashPassword,
-    profailPic: req.cloudinaryImageUrl
-    
   });
-  console.log(req.cloudinaryImageUrl);
+
   //generate token
 
   const token = jwt.sign({ id: user._id }, process.env.jwt_secret, {
@@ -67,10 +56,10 @@ const userRegister = tryCatch(async (req, res) => {
   user.token = token;
   user.password = undefined;
   res.status(200).json(user);
-});
+};
 
 //user login
-const userLogin = tryCatch(async (req, res) => {
+const userLogin = async (req, res) => {
   const { email, password } = req.body;
 
   if (!(email && password)) {
@@ -105,7 +94,7 @@ const userLogin = tryCatch(async (req, res) => {
     userData: userData,
     message: "login successfull",
   });
-});
+};
 
 // //logout
 // const userLogout = tryCatch(async (req, res) => {
@@ -119,7 +108,7 @@ const userLogin = tryCatch(async (req, res) => {
 // });
 
 //view product
-const viewProduct = tryCatch(async (req, res) => {
+const viewProduct = async (req, res) => {
   const product = await productSchema.find();
   if (product.length === 0) {
     res.status(400).json({
@@ -129,24 +118,24 @@ const viewProduct = tryCatch(async (req, res) => {
   } else {
     res.status(200).json(product);
   }
-});
+};
 
 //view product by Id
-const productById = tryCatch(async (req,res)=>{
-  const productId = req.params.id
-  const product = await productSchema.findById(productId)
-  if(!product){
+const productById = async (req, res) => {
+  const productId = req.params.id;
+  const product = await productSchema.findById(productId);
+  if (!product) {
     res.status(401).json({
-      success:false,
-      message:"Product not found"
-    })
+      success: false,
+      message: "Product not found",
+    });
   }
-  res.status(200).json(product)
-})
+  res.status(200).json(product);
+};
 
 //view product by category
 
-const productByCategory = tryCatch(async (req, res) => {
+const productByCategory = async (req, res) => {
   const category = req.params.id;
   const productInCategory = await productSchema.aggregate([
     {
@@ -161,10 +150,10 @@ const productByCategory = tryCatch(async (req, res) => {
   } else {
     res.status(200).json(productInCategory);
   }
-});
+};
 //add to cart
 
-const addToCart = tryCatch(async (req, res) => {
+const addToCart = async (req, res) => {
   const { productId, userId, quantity } = req.body;
 
   let Cart = await cartSchema.findOne({ userId });
@@ -187,32 +176,34 @@ const addToCart = tryCatch(async (req, res) => {
     success: true,
     message: "Product added to cart",
   });
-});
+};
 
-//product to wishlist 
-const addToWishlist = tryCatch(async(req,res)=>{
-  const {productId,userId} =  req.body;
-  let addWishList = await whishListSchema.findOne({userId})
+//product to wishlist
+const addToWishlist = async (req, res) => {
+  const { productId, userId } = req.body;
+  let addWishList = await whishListSchema.findOne({ userId });
 
-  if(!addWishList){
-  addWishList = new wishListSchema({
+  if (!addWishList) {
+    addWishList = new wishListSchema({
       userId,
-      wishlist:[{productId:productId}]
-    })
-  }else {
-    const itemIndex = addWishList.wishlist.findIndex((item)=>item.productId == productId)
-    if(itemIndex !== -1){
-      res.send("Product already exist in wishlist")
-    }else{
-      addWishList.wishlist.push({productId})
+      wishlist: [{ productId: productId }],
+    });
+  } else {
+    const itemIndex = addWishList.wishlist.findIndex(
+      (item) => item.productId == productId
+    );
+    if (itemIndex !== -1) {
+      res.send("Product already exist in wishlist");
+    } else {
+      addWishList.wishlist.push({ productId });
     }
-    await addWishList.save()
+    await addWishList.save();
     res.status(200).json({
-      success:true,
-      message:"Product added to wishlist"
-    })
+      success: true,
+      message: "Product added to wishlist",
+    });
   }
-})
+};
 
 module.exports = {
   userRegister,
@@ -221,5 +212,5 @@ module.exports = {
   productByCategory,
   productById,
   addToCart,
-  addToWishlist
+  addToWishlist,
 };

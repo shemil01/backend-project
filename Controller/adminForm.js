@@ -2,8 +2,9 @@ const productSchema = require("../Model/product");
 const { tryCatch } = require("../Utils/tryCatch");
 const joi = require("joi");
 const cloudinary = require("cloudinary").v2;
-const createError = require("http-errors");
+const orderSchema = require("../Model/OrderSchema");
 const UserSchema = require("../Model/UserSchema");
+const cartSchema = require("../Model/CartSchema");
 
 //joi validation
 const schema = joi.object({
@@ -26,7 +27,7 @@ const schema = joi.object({
 });
 
 //view all users
-const allUsers = tryCatch(async (req, res) => {
+const allUsers = async (req, res) => {
   const users = await UserSchema.find();
   if (users.length === 0) {
     res.status(401).json({
@@ -36,36 +37,50 @@ const allUsers = tryCatch(async (req, res) => {
   } else {
     res.status(201).json(users);
   }
-});
+};
 
 //view users by id
-const userById = tryCatch(async(req,res)=>{
-  const userId = req.params.id
-  const user = await UserSchema.findById(userId)
-  if(!user){
+const userById = async (req, res) => {
+  const userId = req.params.id;
+  const user = await UserSchema.findById(userId);
+  if (!user) {
     res.status(401).json({
-      success:false,
-      message:"User not found the specified id"
-    })
-  }else{
-    res.status(201).json(user)
+      success: false,
+      message: "User not found the specified id",
+    });
+  } else {
+    res.status(201).json(user);
   }
-})
+};
+
+//view user cart
+const getCart = async (req, res) => {
+  const userId = req.params.id;
+  console.log(userId);
+  const Cart = await cartSchema
+    .findOne({ userId: userId })
+    .populate("cart.productId");
+
+  if (!Cart || Cart.cart.length === 0) {
+    return res.status(401).send("Cart is empty");
+  }
+  return res.status(201).json(Cart);
+};
 
 //view all products
 
-const viewProduct = tryCatch(async (req, res) => {
+const viewProduct = async (req, res) => {
   const product = await productSchema.find();
   if (product.length == 0) {
     res.status(404).send("product is empty");
   } else {
     res.json(product);
   }
-});
+};
 
 //view product by ID
 
-const viewProductById = tryCatch(async (req, res) => {
+const viewProductById = async (req, res) => {
   const productId = req.params.id;
   const product = await productSchema.findById(productId);
 
@@ -77,10 +92,10 @@ const viewProductById = tryCatch(async (req, res) => {
   } else {
     res.status(200).json(product);
   }
-});
+};
 
 //view product by category
-const productByCategory = tryCatch(async (req, res) => {
+const productByCategory = async (req, res) => {
   const category = req.params.id;
   const productInCategory = await productSchema.aggregate([
     { $match: { category: category } },
@@ -93,10 +108,10 @@ const productByCategory = tryCatch(async (req, res) => {
   } else {
     res.status(200).json(productInCategory);
   }
-});
+};
 
 //add product
-const addProduct = tryCatch(async (req, res) => {
+const addProduct = async (req, res) => {
   const data = req.body;
   data.image = req.cloudinaryImageUrl;
   //  console.log( req.cloudinaryImageUrl);
@@ -121,14 +136,15 @@ const addProduct = tryCatch(async (req, res) => {
   });
   await newProduct.save();
   res.status(200).send("Product added successfully compleated");
-});
+};
 
 //update product
 
-const updateProduct = tryCatch(async (req, res) => {
+const updateProduct = async (req, res) => {
   const { id } = req.params;
 
   const data = req.body;
+
   const { name, category, description, price, image } = data;
   const { error } = schema.validate(data);
   if (error) {
@@ -157,9 +173,9 @@ const updateProduct = tryCatch(async (req, res) => {
     success: true,
     message: "Product updated ",
   });
-});
+};
 //Delete product
-const deleteProduct = tryCatch(async (req, res) => {
+const deleteProduct = async (req, res) => {
   const { id } = req.params;
   console.log(id);
   const deleted = await productSchema.findByIdAndDelete(id);
@@ -169,12 +185,11 @@ const deleteProduct = tryCatch(async (req, res) => {
       message: "Product not found",
     });
   }
-  // If the code reaches here, it means the product was successfully deleted
   res.status(200).json({
     success: true,
     message: "Product deleted successfully",
   });
-});
+};
 
 module.exports = {
   viewProduct,
@@ -184,5 +199,6 @@ module.exports = {
   updateProduct,
   deleteProduct,
   allUsers,
-  userById
+  userById,
+  getCart,
 };

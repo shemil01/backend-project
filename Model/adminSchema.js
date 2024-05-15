@@ -18,7 +18,7 @@ const adminSchema = new mongoos.Schema({
     
     password:{
         type: String,
-        reqired:true,
+        required:true,
         unique:true
     }
 })
