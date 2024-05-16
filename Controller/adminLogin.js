@@ -13,7 +13,6 @@ const getAdmin = async (req, res) => {
     return res.status(404).send("Admin not found");
   }
 
-
   const passwordMatch = await bcrypt.compare(password, admin.password);
 
   if (!passwordMatch) {
@@ -27,10 +26,11 @@ const getAdmin = async (req, res) => {
       expiresIn: "1h",
     }
   );
-  res.cookie("token", token);
+
   res.status(200).json({
     success: true,
     message: "Login succesfully compleated",
+    token: token,
   });
 };
 

@@ -14,6 +14,6 @@ userRoutes.get("/user/category/:id",tryCatch(controller.productByCategory))
 // userRoutes.post("/user/logout",tryCatch(controller.userLogout))
 userRoutes.post("/user/addcart",userAuth,tryCatch(controller.addToCart))
 userRoutes.post("/user/wishlist",userAuth,tryCatch(controller.addToWishlist))
-
+userRoutes.delete("/user/removewishlist",userAuth,tryCatch(controller.removeWishlist))
 
 module.exports = userRoutes

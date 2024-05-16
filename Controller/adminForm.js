@@ -1,5 +1,4 @@
 const productSchema = require("../Model/product");
-const { tryCatch } = require("../Utils/tryCatch");
 const joi = require("joi");
 const cloudinary = require("cloudinary").v2;
 const orderSchema = require("../Model/OrderSchema");
@@ -56,15 +55,14 @@ const userById = async (req, res) => {
 //view user cart
 const getCart = async (req, res) => {
   const userId = req.params.id;
-  console.log(userId);
   const Cart = await cartSchema
     .findOne({ userId: userId })
     .populate("cart.productId");
 
   if (!Cart || Cart.cart.length === 0) {
-    return res.status(401).send("Cart is empty");
+    return res.status(404).send("Cart is empty");
   }
-  return res.status(201).json(Cart);
+  return res.status(200).json(Cart);
 };
 
 //view all products
@@ -190,6 +188,13 @@ const deleteProduct = async (req, res) => {
     message: "Product deleted successfully",
   });
 };
+//total product purchased
+// const purchasedProduct = async(req,res)=>{
+//   const data = req.body
+//   const product = await orderSchema.aggregate([
+//     {$group:{_id: }}
+//   ])
+// }
 
 module.exports = {
   viewProduct,
