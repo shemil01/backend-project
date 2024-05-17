@@ -153,24 +153,27 @@ const productByCategory = async (req, res) => {
 //add to cart
 
 const addToCart = async (req, res) => {
-  const { productId, userId, quantity } = req.body;
+  const { productId, userId } = req.body;
 
-  let Cart = await cartSchema.findOne({ userId });
-  console.log(productId);
-  if (!Cart) {
-    Cart = new cartSchema({
+  let user = await cartSchema.findOne({ userId });
+
+  if (!user) {
+    user = new cartSchema({
       userId,
-      cart: [{ productId: productId, quantity: quantity }],
+      cart: [{ productId: productId }],
     });
   } else {
-    const itemIndex = Cart.cart.findIndex((item) => item.id === productId);
+    const itemIndex = user.cart.findIndex(
+      (item) => item.productId == productId
+    );
+
     if (itemIndex !== -1) {
-      Cart.cart[itemIndex].quantity += quantity;
+      user.cart[itemIndex].quantity += 1;
     } else {
-      Cart.cart.push({ productId, quantity });
+      user.cart.push({ productId });
     }
   }
-  await Cart.save();
+  await user.save();
   res.status(200).json({
     success: true,
     message: "Product added to cart",
@@ -179,19 +182,55 @@ const addToCart = async (req, res) => {
 
 //view  cart
 const getCart = async (req, res) => {
-  const { userId } = req.params.id;
-  const Cart = await cartSchema
+  const { userId } = req.body;
+  const user = await cartSchema
     .findOne({ userId: userId })
     .populate("cart.productId");
-  if (!Cart || Cart.cart.length === 0) {
-    return res.status(404).json({
+  if (!user || user.cart.length === 0) {
+    res.status(404).json({
       success: false,
-      message: "Cart is empty",
+      message: "cart is empty",
     });
   }
-  res.status(200).json(Cart);
+  res.status(200).json(user);
+};
+//decrease product quantity
+const decreaseQuantity = async (req, res) => {
+  const { productId, userId} = req.body;
+const user = await cartSchema.findOne({userId:userId})
+if(!user){
+  res.status(404).send("Product Not Found In Your Cart")
+}
+const itemIndex = user.cart.findIndex((item)=>item.productId == productId)
+if(itemIndex !== -1){
+  user.cart[itemIndex].quantity -= 1
+}
+await user.save()
+res.status(200).send("Product quantity decreased")
 };
 
+//delete from cart
+
+const removeProduct = async (req,res)=>{
+  const {userId,productId} = req.body
+
+  const user = await cartSchema.findOne({userId:userId})
+  
+  if(!user){
+    res.status(404).send("No product found in your cart")
+  }
+
+  const itemIndex = user.cart.findIndex((item)=>item.productId == productId)
+
+  if(itemIndex !== -1){
+    user.cart.splice(itemIndex,1)
+  }
+  await user.save()
+  res.status(200).send("Product removed from cart")
+}
+
+
+//add product to wish list
 const addToWishlist = async (req, res) => {
   const { productId, userId } = req.body;
   let addWishList = await wishListSchema.findOne({ userId });
@@ -222,6 +261,18 @@ const addToWishlist = async (req, res) => {
     message: "Product added to wishlist",
   });
 };
+// reade wishlist
+
+const viewWishList = async (req,res)=>{
+  const {userId} = req.body
+
+  const user = await wishListSchema.findOne({userId:userId}).populate("wishlist.productId")
+
+  if(!user || user.wishlist.length === 0){
+    res.status(404).send("No product found in your wishlist")
+  }
+  res.status(200).json(user)
+}
 
 //remove wishlist
 const removeWishlist = async (req, res) => {
@@ -256,5 +307,8 @@ module.exports = {
   addToCart,
   addToWishlist,
   removeWishlist,
-  getCart
+  getCart,
+  decreaseQuantity,
+  removeProduct,
+  viewWishList
 };
