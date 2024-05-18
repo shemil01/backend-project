@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const cartSchema = require("../Model/CartSchema");
 const wishListSchema = require("../Model/wishListSchema");
+const stripe = require("stripe")(process.env.STRIPE_SECRET)
 
 //joi validation for user
 const userValidation = joi.object({
@@ -94,17 +95,6 @@ const userLogin = async (req, res) => {
     message: "login successfull",
   });
 };
-
-// //logout
-// const userLogout = tryCatch(async (req, res) => {
-//   const data = req.body;
-
-//   res.clearCookie("token");
-//   res.status(200).json({
-//     success: true,
-//     message: "Logout successfully",
-//   });
-// });
 
 //view product
 const viewProduct = async (req, res) => {
@@ -261,7 +251,7 @@ const addToWishlist = async (req, res) => {
     message: "Product added to wishlist",
   });
 };
-// reade wishlist
+// read wishlist
 
 const viewWishList = async (req,res)=>{
   const {userId} = req.body
@@ -296,7 +286,10 @@ const removeWishlist = async (req, res) => {
   res.send("item removed");
 };
 
-//
+//stripe implimentation
+const stripePayment = async (req,res) => {
+  con
+}
 
 module.exports = {
   userRegister,
@@ -310,5 +303,5 @@ module.exports = {
   getCart,
   decreaseQuantity,
   removeProduct,
-  viewWishList
+  viewWishList         
 };

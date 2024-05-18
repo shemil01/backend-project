@@ -112,7 +112,6 @@ const productByCategory = async (req, res) => {
 const addProduct = async (req, res) => {
   const data = req.body;
   data.image = req.cloudinaryImageUrl;
-  //  console.log( req.cloudinaryImageUrl);
   const { name, description, price, image, category } = data;
   const validate = await schema.validate(data);
   if (!validate) {
@@ -188,13 +187,33 @@ const deleteProduct = async (req, res) => {
     message: "Product deleted successfully",
   });
 };
-//total product purchased
+// //total product purchased
 // const purchasedProduct = async(req,res)=>{
 //   const data = req.body
 //   const product = await orderSchema.aggregate([
-//     {$group:{_id: }}
+   
 //   ])
 // }
+
+//order detailes
+const order = async (req,res) =>{
+  const products = await orderSchema.find()
+
+  if (products.length === 0){
+    res.status(404).json({
+      success:false,
+      messages:"No orders found"
+    })
+  }
+  res.status(200).json(products)
+}
+//total revenue generated
+const totalRevenue = async (req,res) =>{
+  const user = await orderSchema.aggregate([
+    {$group:{_id:null,totalProduct:{$sum:"$totalItems"}}}
+  ])
+}
+
 
 module.exports = {
   viewProduct,
@@ -206,4 +225,5 @@ module.exports = {
   allUsers,
   userById,
   getCart,
+  order
 };

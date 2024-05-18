@@ -18,7 +18,7 @@ const port = process.env.port
 
 app.use(express.json());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false })); // Add this line for URL-encoded bodies
+app.use(bodyParser.urlencoded({ extended: false })); 
 app.use(cors()); // Enable CORS
 app.use("/api", adminRoute);
 app.use("/api",userRoute)

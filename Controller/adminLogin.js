@@ -5,8 +5,6 @@ const jwt = require("jsonwebtoken");
 //admin login
 const getAdmin = async (req, res) => {
   const { email, password } = req.body;
-  // console.log(req.body);
-
   const admin = await adminSchema.findOne({ email: email });
 
   if (!admin) {
