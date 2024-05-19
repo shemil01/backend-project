@@ -6,7 +6,8 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const cartSchema = require("../Model/CartSchema");
 const wishListSchema = require("../Model/wishListSchema");
-const stripe = require("stripe")(process.env.STRIPE_SECRET)
+const Order = require("../Model/OrderSchema");
+const stripe = require("stripe")(process.env.STRIPE_SECRET);
 
 //joi validation for user
 const userValidation = joi.object({
@@ -186,39 +187,38 @@ const getCart = async (req, res) => {
 };
 //decrease product quantity
 const decreaseQuantity = async (req, res) => {
-  const { productId, userId} = req.body;
-const user = await cartSchema.findOne({userId:userId})
-if(!user){
-  res.status(404).send("Product Not Found In Your Cart")
-}
-const itemIndex = user.cart.findIndex((item)=>item.productId == productId)
-if(itemIndex !== -1){
-  user.cart[itemIndex].quantity -= 1
-}
-await user.save()
-res.status(200).send("Product quantity decreased")
+  const { productId, userId } = req.body;
+  const user = await cartSchema.findOne({ userId: userId });
+  if (!user) {
+    res.status(404).send("Product Not Found In Your Cart");
+  }
+  const itemIndex = user.cart.findIndex((item) => item.productId == productId);
+  if (itemIndex !== -1) {
+    user.cart[itemIndex].quantity -= 1;
+  }
+  await user.save();
+  res.status(200).send("Product quantity decreased");
 };
 
 //delete from cart
 
-const removeProduct = async (req,res)=>{
-  const {userId,productId} = req.body
+const removeProduct = async (req, res) => {
+  const { userId, productId } = req.body;
 
-  const user = await cartSchema.findOne({userId:userId})
-  
-  if(!user){
-    res.status(404).send("No product found in your cart")
+  const user = await cartSchema.findOne({ userId: userId });
+
+  if (!user) {
+    res.status(404).send("No product found in your cart");
   }
 
-  const itemIndex = user.cart.findIndex((item)=>item.productId == productId)
+  const itemIndex = user.cart.findIndex((item) => item.productId == productId);
 
-  if(itemIndex !== -1){
-    user.cart.splice(itemIndex,1)
+  if (itemIndex !== -1) {
+    user.cart.splice(itemIndex, 1);
   }
-  await user.save()
-  res.status(200).send("Product removed from cart")
-}
-
+  await user.save();
+  res.status(200).send("Product removed from cart");
+};
 
 //add product to wish list
 const addToWishlist = async (req, res) => {
@@ -253,16 +253,18 @@ const addToWishlist = async (req, res) => {
 };
 // read wishlist
 
-const viewWishList = async (req,res)=>{
-  const {userId} = req.body
+const viewWishList = async (req, res) => {
+  const { userId } = req.body;
 
-  const user = await wishListSchema.findOne({userId:userId}).populate("wishlist.productId")
+  const user = await wishListSchema
+    .findOne({ userId: userId })
+    .populate("wishlist.productId");
 
-  if(!user || user.wishlist.length === 0){
-    res.status(404).send("No product found in your wishlist")
+  if (!user || user.wishlist.length === 0) {
+    res.status(404).send("No product found in your wishlist");
   }
-  res.status(200).json(user)
-}
+  res.status(200).json(user);
+};
 
 //remove wishlist
 const removeWishlist = async (req, res) => {
@@ -286,10 +288,71 @@ const removeWishlist = async (req, res) => {
   res.send("item removed");
 };
 
-//stripe implimentation
-const stripePayment = async (req,res) => {
-  con
-}
+// Buy cart item
+const buyProduct = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const Cart = await cartSchema
+      .findOne({ userId })
+      .populate("cart.productId");
+
+    if (!Cart || Cart.cart.length === 0) {
+      return res.status(404).send("No products found in your cart");
+    }
+
+    let totalItems = 0;
+    let totalPrice = 0;
+
+    Cart.cart.forEach((item) => {
+      const quantity = item.quantity || 0;
+      const price = item.productId.price || 0;
+
+      totalItems += quantity;
+      totalPrice += quantity * price;
+    });
+
+    // Validate totalPrice to prevent NaN values
+    if (isNaN(totalPrice)) {
+      return res.status(400).send("Invalid price calculation");
+    }
+
+    // Create new Order
+    const order = new Order({
+      products: Cart.cart,
+      userId: Cart.userId,
+      totalItems,
+      totalPrice,
+      orderId: `ORD-${Date.now()}`,
+    });
+
+    
+
+    await order.save();
+
+    Cart.cart = [];
+    await Cart.save();
+
+    res.status(200).send("Order placed successfully");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("An error occurred while processing your order");
+  }
+};
+
+// order records
+
+const orderRecords = async (req, res) => {
+  const { userId } = req.params;
+
+  const orders = await Order.findOne({ userId });
+
+  if (!orders) {
+    res.status(404).send("No order records");
+  }
+
+  res.status(200).json(orders);
+};
 
 module.exports = {
   userRegister,
@@ -303,5 +366,7 @@ module.exports = {
   getCart,
   decreaseQuantity,
   removeProduct,
-  viewWishList         
+  viewWishList,
+  buyProduct,
+  orderRecords,
 };

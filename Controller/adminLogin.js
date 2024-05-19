@@ -14,7 +14,7 @@ const getAdmin = async (req, res) => {
   const passwordMatch = await bcrypt.compare(password, admin.password);
 
   if (!passwordMatch) {
-    return res.status(401).send("Incorrect password");
+    return res.status(403).send("Incorrect password");
   }
 
   const token = jwt.sign(

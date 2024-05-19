@@ -1,7 +1,7 @@
 const productSchema = require("../Model/product");
 const joi = require("joi");
 const cloudinary = require("cloudinary").v2;
-const orderSchema = require("../Model/OrderSchema");
+const Order = require("../Model/OrderSchema");
 const UserSchema = require("../Model/UserSchema");
 const cartSchema = require("../Model/CartSchema");
 
@@ -29,7 +29,7 @@ const schema = joi.object({
 const allUsers = async (req, res) => {
   const users = await UserSchema.find();
   if (users.length === 0) {
-    res.status(401).json({
+    res.status(404).json({
       success: true,
       message: "Users is empty",
     });
@@ -43,7 +43,7 @@ const userById = async (req, res) => {
   const userId = req.params.id;
   const user = await UserSchema.findById(userId);
   if (!user) {
-    res.status(401).json({
+    res.status(404).json({
       success: false,
       message: "User not found the specified id",
     });
@@ -187,33 +187,25 @@ const deleteProduct = async (req, res) => {
     message: "Product deleted successfully",
   });
 };
-// //total product purchased
-// const purchasedProduct = async(req,res)=>{
-//   const data = req.body
-//   const product = await orderSchema.aggregate([
-   
-//   ])
-// }
 
 //order detailes
-const order = async (req,res) =>{
-  const products = await orderSchema.find()
-
-  if (products.length === 0){
+const orders = async (req, res) => {
+  const { userId } = req.params;
+  const products = await Order.findOne({ userId: userId });
+  if (products.length === 0) {
     res.status(404).json({
-      success:false,
-      messages:"No orders found"
-    })
+      success: false,
+      messages: "No orders found",
+    });
   }
-  res.status(200).json(products)
-}
+  res.status(200).json(products);
+};
 //total revenue generated
-const totalRevenue = async (req,res) =>{
-  const user = await orderSchema.aggregate([
-    {$group:{_id:null,totalProduct:{$sum:"$totalItems"}}}
-  ])
-}
-
+// const totalRevenue = async (req,res) =>{
+//   const user = await orderSchema.aggregate([
+//     {$group:{_id:null,totalProduct:{$sum:"$totalItems"}}}
+//   ])
+// }
 
 module.exports = {
   viewProduct,
@@ -225,5 +217,5 @@ module.exports = {
   allUsers,
   userById,
   getCart,
-  order
+  orders,
 };

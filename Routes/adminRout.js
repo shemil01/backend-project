@@ -14,11 +14,10 @@ adminRoutes.get(
   tryCatch(adminController.allUsers)
 );
 adminRoutes.get(
-    "/admin/user/:id",
-    adminAuth,
-    tryCatch(adminController.userById
-    )
-  );
+  "/admin/user/:id",
+  adminAuth,
+  tryCatch(adminController.userById)
+);
 adminRoutes.get(
   "/admin/allproduct",
   adminAuth,
@@ -56,7 +55,6 @@ adminRoutes.get(
   adminAuth,
   tryCatch(adminController.getCart)
 ),
- 
-adminRoutes.get("/admin/orders",adminAuth,tryCatch(adminController.order))
+  adminRoutes.get("/admin/orders/:userId", adminAuth, tryCatch(adminController.orders));
 
 module.exports = adminRoutes;
