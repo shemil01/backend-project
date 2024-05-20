@@ -19,7 +19,7 @@ userRoutes.delete("/user/remove",userAuth,tryCatch(controller.removeProduct))
 userRoutes.post("/user/wishlist",userAuth,tryCatch(controller.addToWishlist))
 userRoutes.get("/user/getWishlist",userAuth,tryCatch(controller.viewWishList))
 userRoutes.delete("/user/removewishlist",userAuth,tryCatch(controller.removeWishlist))
-userRoutes.get("/user/order/:userId",userAuth,tryCatch(controller.buyProduct))
+userRoutes.post("/user/order/:userId",userAuth,tryCatch(controller.buyProduct))
 userRoutes.get("/user/orderData/:userId",userAuth,tryCatch(controller.orderRecords))
 
 module.exports = userRoutes

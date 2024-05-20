@@ -1,9 +1,9 @@
 const productSchema = require("../Model/product");
 const joi = require("joi");
 const cloudinary = require("cloudinary").v2;
-const Order = require("../Model/OrderSchema");
 const UserSchema = require("../Model/UserSchema");
 const cartSchema = require("../Model/CartSchema");
+const OrderSchema = require("../Model/OrderSchema")
 
 //joi validation
 const schema = joi.object({
@@ -191,7 +191,7 @@ const deleteProduct = async (req, res) => {
 //order detailes
 const orders = async (req, res) => {
   const { userId } = req.params;
-  const products = await Order.findOne({ userId: userId });
+  const products = await OrderSchema.findOne({ userId: userId });
   if (products.length === 0) {
     res.status(404).json({
       success: false,
@@ -201,11 +201,16 @@ const orders = async (req, res) => {
   res.status(200).json(products);
 };
 //total revenue generated
-// const totalRevenue = async (req,res) =>{
-//   const user = await orderSchema.aggregate([
-//     {$group:{_id:null,totalProduct:{$sum:"$totalItems"}}}
-//   ])
-// }
+const totalRevenue = async (req, res) => {
+  const revenue = await OrderSchema.aggregate([
+    { $group: { _id: null, totalRevenue: { $sum: "$totalPrice" } } },
+  ]);
+
+  if (revenue.length > 0) {
+    res.status(200).json(revenue);
+  }
+  res.status(404).send("No revenue records");
+};
 
 module.exports = {
   viewProduct,
@@ -218,4 +223,5 @@ module.exports = {
   userById,
   getCart,
   orders,
+  totalRevenue,
 };

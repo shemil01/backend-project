@@ -55,6 +55,16 @@ adminRoutes.get(
   adminAuth,
   tryCatch(adminController.getCart)
 ),
-  adminRoutes.get("/admin/orders/:userId", adminAuth, tryCatch(adminController.orders));
+  adminRoutes.get(
+    "/admin/orders/:userId",
+    adminAuth,
+    tryCatch(adminController.orders)
+  );
+
+adminRoutes.get(
+  "/admin/revenue",
+  adminAuth,
+  tryCatch(adminController.totalRevenue)
+);
 
 module.exports = adminRoutes;

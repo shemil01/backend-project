@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const cartSchema = require("../Model/CartSchema");
 const wishListSchema = require("../Model/wishListSchema");
 const Order = require("../Model/OrderSchema");
+const OrderSchema = require("../Model/OrderSchema");
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 
 //joi validation for user
@@ -288,56 +289,47 @@ const removeWishlist = async (req, res) => {
   res.send("item removed");
 };
 
-// Buy cart item
+// Buy cart items
 const buyProduct = async (req, res) => {
   const { userId } = req.params;
 
-  try {
-    const Cart = await cartSchema
-      .findOne({ userId })
-      .populate("cart.productId");
+  const Cart = await cartSchema.findOne({ userId }).populate("cart.productId");
 
-    if (!Cart || Cart.cart.length === 0) {
-      return res.status(404).send("No products found in your cart");
-    }
-
-    let totalItems = 0;
-    let totalPrice = 0;
-
-    Cart.cart.forEach((item) => {
-      const quantity = item.quantity || 0;
-      const price = item.productId.price || 0;
-
-      totalItems += quantity;
-      totalPrice += quantity * price;
-    });
-
-    // Validate totalPrice to prevent NaN values
-    if (isNaN(totalPrice)) {
-      return res.status(400).send("Invalid price calculation");
-    }
-
-    // Create new Order
-    const order = new Order({
-      products: Cart.cart,
-      userId: Cart.userId,
-      totalItems,
-      totalPrice,
-      orderId: `ORD-${Date.now()}`,
-    });
-
-    
-
-    await order.save();
-
-    Cart.cart = [];
-    await Cart.save();
-
-    res.status(200).send("Order placed successfully");
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("An error occurred while processing your order");
+  if (!Cart || Cart.cart.length === 0) {
+    return res.status(404).send("No products found in your cart");
   }
+  let totalItems = 0;
+  let totalPrice = 0;
+
+  Cart.cart.forEach((item) => {
+    const quantity = item.quantity || 0;
+    const price = item.productId.price || 0;
+
+    totalItems += quantity;
+    totalPrice += quantity * price;
+  });
+
+  // Validate totalPrice to prevent NaN values
+  // if (isNaN(totalPrice)) {
+  //   return res.status(400).send("Invalid price calculation");
+  // }
+
+  // Create new Order
+   order = new OrderSchema({
+    products: Cart.cart,
+    userId: Cart.userId,
+    totalItems,
+    totalPrice,
+    orderId: `ORD-${Date.now()}`,
+  });
+
+  await order.save();
+  console.log(order);
+
+  Cart.cart = [];
+  await Cart.save();
+
+  res.status(200).send("Order placed successfully");
 };
 
 // order records
