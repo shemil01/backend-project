@@ -289,14 +289,70 @@ const removeWishlist = async (req, res) => {
   res.send("item removed");
 };
 
+//buy from cart
+
+const order = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const cartData = await cartSchema.findOne({ userId: userId });
+
+    if (!cartData || cartData.cart.length === 0) {
+      return res.status(200).send("No product found in your cart");
+    }
+
+    const line_items = [];
+    for (const cartItem of cartData.cart) {
+      const product = await productSchema.findById(cartItem.product);
+      if (!product) {
+        return res.status(404).send(`Product with ID ${cartItem.product} not found`);
+      }
+      line_items.push({
+        price_data: {
+          currency: 'inr',
+          product_data: {
+            name: product.title,
+          },
+          unit_amount: Math.round(product.price * 100),
+        },
+        quantity: cartItem.quantity,
+      });
+    }
+
+    // Create Stripe session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      line_items: line_items,
+      success_url: "your-success-url",
+      cancel_url: "your-cancel-url",
+    });
+
+    const sessionId = session.id;
+    const sessionUrl = session.url;
+
+    res.cookie("session", sessionId);
+    res.send(sessionUrl);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("An error occurred while processing your order");
+  }
+};
+
 // Buy cart items
-const buyProduct = async (req, res) => {
+const orderSuccess = async (req, res) => {
+  const {session} = req.cookie
   const { userId } = req.params;
 
-  const Cart = await cartSchema.findOne({ userId }).populate("cart.productId");
+  res.clearCookie('session');
+
+  const Cart = await cartSchema.findOne({ userId }).populate({
+    path: "cart.productId",
+    model: "product",
+  });
 
   if (!Cart || Cart.cart.length === 0) {
-    return res.status(404).send("No products found in your cart");
+    return res.status(200).send("No products found in your cart");
   }
   let totalItems = 0;
   let totalPrice = 0;
@@ -309,22 +365,22 @@ const buyProduct = async (req, res) => {
     totalPrice += quantity * price;
   });
 
-  // Validate totalPrice to prevent NaN values
-  // if (isNaN(totalPrice)) {
-  //   return res.status(400).send("Invalid price calculation");
-  // }
-
   // Create new Order
-   order = new OrderSchema({
-    products: Cart.cart,
+  const order = new OrderSchema({
     userId: Cart.userId,
     totalItems,
     totalPrice,
-    orderId: `ORD-${Date.now()}`,
+    orderId:session,
+  });
+
+  Cart.cart.forEach((items) => {
+    order.products.push({
+      productId: items.productId._id,
+      quantity: items.quantity,
+    });
   });
 
   await order.save();
-  console.log(order);
 
   Cart.cart = [];
   await Cart.save();
@@ -337,7 +393,7 @@ const buyProduct = async (req, res) => {
 const orderRecords = async (req, res) => {
   const { userId } = req.params;
 
-  const orders = await Order.findOne({ userId });
+  const orders = await OrderSchema.findOne({ userId });
 
   if (!orders) {
     res.status(404).send("No order records");
@@ -359,6 +415,7 @@ module.exports = {
   decreaseQuantity,
   removeProduct,
   viewWishList,
-  buyProduct,
+  order,
+  orderSuccess,
   orderRecords,
 };

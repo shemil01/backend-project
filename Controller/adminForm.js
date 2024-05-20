@@ -3,7 +3,7 @@ const joi = require("joi");
 const cloudinary = require("cloudinary").v2;
 const UserSchema = require("../Model/UserSchema");
 const cartSchema = require("../Model/CartSchema");
-const OrderSchema = require("../Model/OrderSchema")
+const OrderSchema = require("../Model/OrderSchema");
 
 //joi validation
 const schema = joi.object({
@@ -207,9 +207,10 @@ const totalRevenue = async (req, res) => {
   ]);
 
   if (revenue.length > 0) {
-    res.status(200).json(revenue);
+    res.status(200).json(revenue[0]);
+  } else {
+    res.status(404).send("No revenue records");
   }
-  res.status(404).send("No revenue records");
 };
 
 module.exports = {

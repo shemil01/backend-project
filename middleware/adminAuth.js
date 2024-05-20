@@ -16,7 +16,7 @@ module.exports = function verifyToken (req,res,next){
                 message:"Un authourized"
             })
         }
-        req.email=decoded.eamil
+        req.email=decoded.email
         next()
     })
 }

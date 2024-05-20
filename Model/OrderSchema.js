@@ -16,9 +16,8 @@ const orderSchema = new mongoose.Schema({
   ],
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-        ref: "UserSchema",
+    ref: "UserSchema",
     required: true,
-    unique: true,
   },
   purchaseDate: {
     type: Date,
