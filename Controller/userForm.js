@@ -302,29 +302,32 @@ const order = async (req, res) => {
 
     const line_items = [];
     for (const cartItem of cartData.cart) {
-      const product = await productSchema.findById(cartItem.product);
+      const product = await productSchema.findById(cartItem.productId);
       if (!product) {
-        return res.status(404).send(`Product with ID ${cartItem.product} not found`);
+        return res
+          .status(404)
+          .send(`Product with ID ${cartItem.productId} not found`);
       }
       line_items.push({
         price_data: {
-          currency: 'inr',
+          currency: "inr",
           product_data: {
-            name: product.title,
+            name: product.name,
           },
           unit_amount: Math.round(product.price * 100),
         },
         quantity: cartItem.quantity,
       });
     }
-
+    console.log("helllooo");
+    console.log(line_items);
     // Create Stripe session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
+      payment_method_types: ["card"],
+      mode: "payment",
       line_items: line_items,
-      success_url: "your-success-url",
-      cancel_url: "your-cancel-url",
+      success_url: "http://localhost:3010/api/user/success",
+      cancel_url: "http://localhost:3010/api/user/cancell",
     });
 
     const sessionId = session.id;
@@ -332,7 +335,6 @@ const order = async (req, res) => {
 
     res.cookie("session", sessionId);
     res.send(sessionUrl);
-
   } catch (error) {
     console.error(error);
     res.status(500).send("An error occurred while processing your order");
@@ -341,10 +343,10 @@ const order = async (req, res) => {
 
 // Buy cart items
 const orderSuccess = async (req, res) => {
-  const {session} = req.cookie
+  const { session } = req.cookies;
   const { userId } = req.params;
 
-  res.clearCookie('session');
+  res.clearCookie("session");
 
   const Cart = await cartSchema.findOne({ userId }).populate({
     path: "cart.productId",
@@ -370,7 +372,7 @@ const orderSuccess = async (req, res) => {
     userId: Cart.userId,
     totalItems,
     totalPrice,
-    orderId:session,
+    orderId: session,
   });
 
   Cart.cart.forEach((items) => {

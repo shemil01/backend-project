@@ -66,5 +66,6 @@ adminRoutes.get(
   adminAuth,
   tryCatch(adminController.totalRevenue)
 );
+adminRoutes.get("/admin/totalPurchase",adminAuth,tryCatch(adminController.totalPurchase))
 
 module.exports = adminRoutes;

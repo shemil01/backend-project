@@ -200,6 +200,17 @@ const orders = async (req, res) => {
   }
   res.status(200).json(products);
 };
+//total product purchased
+const totalPurchase = async (req, res) => {
+  const totalOrder = await OrderSchema.aggregate([
+    { $group: { _id: null, totalPurchase: { $sum: "$totalItems" } } },
+  ]);
+  if (totalOrder.length > 0) {
+    res.status(200).json(totalOrder[0]);
+  }
+  res.status(200).send("Product not purchased");
+};
+
 //total revenue generated
 const totalRevenue = async (req, res) => {
   const revenue = await OrderSchema.aggregate([
@@ -225,4 +236,5 @@ module.exports = {
   getCart,
   orders,
   totalRevenue,
+  totalPurchase,
 };
