@@ -21,15 +21,45 @@ const getAdmin = async (req, res) => {
     { email: admin.email },
     process.env.ACCES_TOKEN_SECRET,
     {
-      expiresIn: "1h",
+      expiresIn: "1m",
     }
   );
-
+  const refreshToken = jwt.sign(
+    { email: admin.email },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: "12h",
+    }
+  );
+  res.cookie("token", token, {
+    expires: new Date(Date.now() + 60 * 1000),
+  });
+  res.cookie("refreshToken", refreshToken);
   res.status(200).json({
     success: true,
     message: "Login succesfully compleated",
-    token: token,
   });
 };
 
-module.exports = { getAdmin };
+//refresh token
+
+const generateToken = async (req, res) => {
+  const tokens = req.cookies.refreshToken;
+  if (!tokens) {
+    res.status(401).send("login your accound");
+  }
+  const decoded = jwt.verify(tokens, process.env.REFRESH_TOKEN_SECRET);
+  console.log(decoded);
+  const token = jwt.sign(
+    { email:decoded.email },
+    process.env.ACCES_TOKEN_SECRET,
+    {
+      expiresIn: "1m",
+    }
+  );
+  res.cookie("token", token, {
+    expires: new Date(Date.now() + 60 * 1000),
+  }).send("refresh token generated")
+};
+
+module.exports = { getAdmin ,generateToken};

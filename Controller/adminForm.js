@@ -27,6 +27,7 @@ const schema = joi.object({
 
 //view all users
 const allUsers = async (req, res) => {
+  const {token} = req.cookies
   const users = await UserSchema.find();
   if (users.length === 0) {
     res.status(404).json({
@@ -40,6 +41,7 @@ const allUsers = async (req, res) => {
 
 //view users by id
 const userById = async (req, res) => {
+  const {token} = req.cookies
   const userId = req.params.id;
   const user = await UserSchema.findById(userId);
   if (!user) {
@@ -54,6 +56,7 @@ const userById = async (req, res) => {
 
 //view user cart
 const getCart = async (req, res) => {
+  const {token} = req.cookies
   const userId = req.params.id;
   const Cart = await cartSchema
     .findOne({ userId: userId })
@@ -68,6 +71,7 @@ const getCart = async (req, res) => {
 //view all products
 
 const viewProduct = async (req, res) => {
+  const {token} = req.cookies
   const product = await productSchema.find();
   if (product.length == 0) {
     res.status(404).send("product is empty");
@@ -79,6 +83,7 @@ const viewProduct = async (req, res) => {
 //view product by ID
 
 const viewProductById = async (req, res) => {
+  const {token} = req.cookies
   const productId = req.params.id;
   const product = await productSchema.findById(productId);
 
@@ -94,6 +99,7 @@ const viewProductById = async (req, res) => {
 
 //view product by category
 const productByCategory = async (req, res) => {
+  const {token} = req.cookies
   const category = req.params.id;
   const productInCategory = await productSchema.aggregate([
     { $match: { category: category } },
@@ -110,6 +116,7 @@ const productByCategory = async (req, res) => {
 
 //add product
 const addProduct = async (req, res) => {
+  const {token} = req.cookies
   const data = req.body;
   data.image = req.cloudinaryImageUrl;
   const { name, description, price, image, category } = data;
@@ -138,6 +145,7 @@ const addProduct = async (req, res) => {
 //update product
 
 const updateProduct = async (req, res) => {
+  const {token} = req.cookies
   const { id } = req.params;
 
   const data = req.body;
@@ -173,6 +181,7 @@ const updateProduct = async (req, res) => {
 };
 //Delete product
 const deleteProduct = async (req, res) => {
+  const {token} = req.cookies
   const { id } = req.params;
   console.log(id);
   const deleted = await productSchema.findByIdAndDelete(id);
@@ -190,6 +199,7 @@ const deleteProduct = async (req, res) => {
 
 //order detailes
 const orders = async (req, res) => {
+  const {token} = req.cookies
   const { userId } = req.params;
   const products = await OrderSchema.findOne({ userId: userId });
   if (products.length === 0) {
@@ -202,6 +212,7 @@ const orders = async (req, res) => {
 };
 //total product purchased
 const totalPurchase = async (req, res) => {
+  const {token} = req.cookies
   const totalOrder = await OrderSchema.aggregate([
     { $group: { _id: null, totalPurchase: { $sum: "$totalItems" } } },
   ]);
@@ -213,6 +224,8 @@ const totalPurchase = async (req, res) => {
 
 //total revenue generated
 const totalRevenue = async (req, res) => {
+  const {token} = req.cookies
+  console.log(req.cookies);
   const revenue = await OrderSchema.aggregate([
     { $group: { _id: null, totalRevenue: { $sum: "$totalPrice" } } },
   ]);

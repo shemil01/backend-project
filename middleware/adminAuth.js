@@ -1,13 +1,13 @@
 const jwt = require('jsonwebtoken')
 
 module.exports = function verifyToken (req,res,next){
-    const token = req.headers['authorization']
+    const {token,refreshToken} = req.cookies
 
     if(!token){
-        res.status(403).json({
-            success:false,
-            message:"no token provide"
-        })
+        if(!refreshToken){
+res.status(401).send("Login your account")
+        }
+        return res.redirect("/api/admin/refresh-token")
     }
     jwt.verify(token,process.env.ACCES_TOKEN_SECRET,(err,decoded)=>{
         if(err){

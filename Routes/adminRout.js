@@ -68,4 +68,7 @@ adminRoutes.get(
 );
 adminRoutes.get("/admin/totalPurchase",adminAuth,tryCatch(adminController.totalPurchase))
 
+
+adminRoutes.all("/admin/refresh-token",tryCatch(Controller.generateToken))
+
 module.exports = adminRoutes;

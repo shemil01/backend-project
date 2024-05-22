@@ -90,7 +90,7 @@ const userLogin = async (req, res) => {
     expiresIn: "2h",
   });
 
-  // res.cookies = token;
+  // res.cookie = token;
   res.status(200).json({
     token: token,
     userData: userData,
@@ -319,8 +319,6 @@ const order = async (req, res) => {
         quantity: cartItem.quantity,
       });
     }
-    console.log("helllooo");
-    console.log(line_items);
     // Create Stripe session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -344,9 +342,11 @@ const order = async (req, res) => {
 // Buy cart items
 const orderSuccess = async (req, res) => {
   const { session } = req.cookies;
+  
   const { userId } = req.params;
-
+  
   res.clearCookie("session");
+  
 
   const Cart = await cartSchema.findOne({ userId }).populate({
     path: "cart.productId",
