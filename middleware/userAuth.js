@@ -3,7 +3,7 @@ const { tryCatch } = require('../Utils/tryCatch');
 const userSchema = require('../Model/UserSchema');
 
 const userAuth = tryCatch(async (req, res, next) => {
-  const token = req.headers['authorization']
+  const {token} = req.cookies
   if (!token) {
     return res.status(401).json({
       success: false,

@@ -1,6 +1,5 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const path = require("path");
 dotenv.config({ path: "./Config/.env" });
 // const multer = require("multer");
 const cors = require("cors");
@@ -19,12 +18,12 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(cors()); // Enable CORS
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use("/api", adminRoute);
 app.use("/api", userRoute);
 DbConnect();
 
-app.use(errorHandler)
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`your app is listening port:${port}`);

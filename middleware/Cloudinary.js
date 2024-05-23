@@ -15,9 +15,7 @@ const storage = multer.diskStorage({});
 // Multer upload configuration
 const upload = multer({
   storage: storage,
-  // limits: {
-  //   fileSize: 1024 * 1024 * 10,
-  // },
+ 
 });
 
 // Middleware to upload image to Cloudinary

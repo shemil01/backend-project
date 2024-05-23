@@ -55,7 +55,9 @@ const userRegister = async (req, res) => {
   const token = jwt.sign({ id: user._id }, process.env.jwt_secret, {
     expiresIn: "2h",
   });
-  user.token = token;
+  // user.token = token;
+  res.cookie("token", token);
+
   user.password = undefined;
   res.status(200).json(user);
 };
@@ -90,9 +92,8 @@ const userLogin = async (req, res) => {
     expiresIn: "2h",
   });
 
-  // res.cookie = token;
+  res.cookie("token", token);
   res.status(200).json({
-    token: token,
     userData: userData,
     message: "login successfull",
   });
@@ -100,6 +101,7 @@ const userLogin = async (req, res) => {
 
 //view product
 const viewProduct = async (req, res) => {
+  const { token } = req.cookies;
   const product = await productSchema.find();
   if (product.length === 0) {
     res.status(400).json({
@@ -113,6 +115,7 @@ const viewProduct = async (req, res) => {
 
 //view product by Id
 const productById = async (req, res) => {
+  const { token } = req.cookies;
   const productId = req.params.id;
   const product = await productSchema.findById(productId);
   if (!product) {
@@ -127,6 +130,7 @@ const productById = async (req, res) => {
 //view product by category
 
 const productByCategory = async (req, res) => {
+  const { token } = req.cookies;
   const category = req.params.id;
   const productInCategory = await productSchema.aggregate([
     {
@@ -145,6 +149,7 @@ const productByCategory = async (req, res) => {
 //add to cart
 
 const addToCart = async (req, res) => {
+  const { token } = req.cookies;
   const { productId, userId } = req.body;
 
   let user = await cartSchema.findOne({ userId });
@@ -174,6 +179,7 @@ const addToCart = async (req, res) => {
 
 //view  cart
 const getCart = async (req, res) => {
+  const { token } = req.cookies;
   const { userId } = req.body;
   const user = await cartSchema
     .findOne({ userId: userId })
@@ -204,6 +210,7 @@ const decreaseQuantity = async (req, res) => {
 //delete from cart
 
 const removeProduct = async (req, res) => {
+  const { token } = req.cookies;
   const { userId, productId } = req.body;
 
   const user = await cartSchema.findOne({ userId: userId });
@@ -223,6 +230,7 @@ const removeProduct = async (req, res) => {
 
 //add product to wish list
 const addToWishlist = async (req, res) => {
+  const { token } = req.cookies;
   const { productId, userId } = req.body;
   let addWishList = await wishListSchema.findOne({ userId });
 
@@ -255,6 +263,7 @@ const addToWishlist = async (req, res) => {
 // read wishlist
 
 const viewWishList = async (req, res) => {
+  const { token } = req.cookies;
   const { userId } = req.body;
 
   const user = await wishListSchema
@@ -269,6 +278,7 @@ const viewWishList = async (req, res) => {
 
 //remove wishlist
 const removeWishlist = async (req, res) => {
+  const { token } = req.cookies;
   const { userId, productId } = req.body;
 
   const wishList = await wishListSchema.findOne({ userId });
@@ -293,6 +303,7 @@ const removeWishlist = async (req, res) => {
 
 const order = async (req, res) => {
   try {
+    const { token } = req.cookies;
     const { userId } = req.params;
     const cartData = await cartSchema.findOne({ userId: userId });
 
@@ -324,7 +335,7 @@ const order = async (req, res) => {
       payment_method_types: ["card"],
       mode: "payment",
       line_items: line_items,
-      success_url: "http://localhost:3010/api/user/success",
+      success_url: `http://localhost:3010/api/user/success/${userId}`,
       cancel_url: "http://localhost:3010/api/user/cancell",
     });
 
@@ -341,12 +352,11 @@ const order = async (req, res) => {
 
 // Buy cart items
 const orderSuccess = async (req, res) => {
-  const { session } = req.cookies;
-  
+  const { session, token } = req.cookies;
+
   const { userId } = req.params;
-  
+
   res.clearCookie("session");
-  
 
   const Cart = await cartSchema.findOne({ userId }).populate({
     path: "cart.productId",
@@ -393,6 +403,7 @@ const orderSuccess = async (req, res) => {
 // order records
 
 const orderRecords = async (req, res) => {
+  const { token } = req.cookies;
   const { userId } = req.params;
 
   const orders = await OrderSchema.findOne({ userId });

@@ -49,17 +49,19 @@ const generateToken = async (req, res) => {
     res.status(401).send("login your accound");
   }
   const decoded = jwt.verify(tokens, process.env.REFRESH_TOKEN_SECRET);
-  console.log(decoded);
+
   const token = jwt.sign(
-    { email:decoded.email },
+    { email: decoded.email },
     process.env.ACCES_TOKEN_SECRET,
     {
       expiresIn: "1m",
     }
   );
-  res.cookie("token", token, {
-    expires: new Date(Date.now() + 60 * 1000),
-  }).send("refresh token generated")
+  res
+    .cookie("token", token, {
+      expires: new Date(Date.now() + 60 * 1000),
+    })
+    .send("refresh token generated");
 };
 
-module.exports = { getAdmin ,generateToken};
+module.exports = { getAdmin, generateToken };
