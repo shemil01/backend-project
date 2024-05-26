@@ -22,22 +22,27 @@ const userValidation = joi.object({
   password: joi.string().messages({
     "string.base": "password is required",
   }),
+  confirmPass: joi.string().messages({
+    "string.base": "password is required",
+  }),
 });
 
 //user registration
 const userRegister = async (req, res) => {
-  const { email, name, password } = req.body;
-  const validate = await userValidation.validate({ email, name, password });
+  const { email, name, password,confirmPass } = req.body;
+  // const data = JSON.parse(req.body.data)
+  
+  const validate = await userValidation.validate({ email, name, password ,confirmPass});
   if (!validate) {
     res.status(400).send("Error");
   }
-  if (!(name && email && password)) {
+  if (!(name && email && password && confirmPass)) {
     res.status(400).send("Fill all fields");
   }
   //check user is exist or not
   const userExist = await userSchema.findOne({ email });
   if (userExist) {
-    res.status(401).send("User already exist");
+    res.status(401).json({message:"User already exist"});
   }
 
   //password bcrypt
@@ -59,7 +64,10 @@ const userRegister = async (req, res) => {
   res.cookie("token", token);
 
   user.password = undefined;
-  res.status(200).json(user);
+  res.status(200).json({
+    success:true,
+    message:"Account created successfully"
+  });
 };
 
 //user login
@@ -101,7 +109,7 @@ const userLogin = async (req, res) => {
 
 //view product
 const viewProduct = async (req, res) => {
-  const { token } = req.cookies;
+ 
   const product = await productSchema.find();
   if (product.length === 0) {
     res.status(400).json({
@@ -115,7 +123,7 @@ const viewProduct = async (req, res) => {
 
 //view product by Id
 const productById = async (req, res) => {
-  const { token } = req.cookies;
+  
   const productId = req.params.id;
   const product = await productSchema.findById(productId);
   if (!product) {
@@ -130,7 +138,7 @@ const productById = async (req, res) => {
 //view product by category
 
 const productByCategory = async (req, res) => {
-  const { token } = req.cookies;
+ 
   const category = req.params.id;
   const productInCategory = await productSchema.aggregate([
     {
@@ -150,7 +158,11 @@ const productByCategory = async (req, res) => {
 
 const addToCart = async (req, res) => {
   const { token } = req.cookies;
-  const { productId, userId } = req.body;
+  const { productId } = req.body;
+
+  const valid = await jwt.verify(token,process.env.jwt_secret)
+ 
+  const userId = valid.id
 
   let user = await cartSchema.findOne({ userId });
 
@@ -180,7 +192,11 @@ const addToCart = async (req, res) => {
 //view  cart
 const getCart = async (req, res) => {
   const { token } = req.cookies;
-  const { userId } = req.body;
+  // const { userId } = req.params;
+  const valid = await jwt.verify(token,process.env.jwt_secret)
+
+  const userId = valid.id  
+
   const user = await cartSchema
     .findOne({ userId: userId })
     .populate("cart.productId");
@@ -190,11 +206,16 @@ const getCart = async (req, res) => {
       message: "cart is empty",
     });
   }
+
   res.status(200).json(user);
 };
 //decrease product quantity
 const decreaseQuantity = async (req, res) => {
-  const { productId, userId } = req.body;
+  const { token } = req.cookies;
+  const valid =  jwt.verify(token,process.env.jwt_secret)
+  const userId = valid.id
+  const { productId } = req.params;
+  
   const user = await cartSchema.findOne({ userId: userId });
   if (!user) {
     res.status(404).send("Product Not Found In Your Cart");
@@ -211,21 +232,26 @@ const decreaseQuantity = async (req, res) => {
 
 const removeProduct = async (req, res) => {
   const { token } = req.cookies;
-  const { userId, productId } = req.body;
+  const valid =  jwt.verify(token,process.env.jwt_secret)
+  const { productId } = req.params;
+
+  const userId = valid.id
 
   const user = await cartSchema.findOne({ userId: userId });
-
+  
   if (!user) {
     res.status(404).send("No product found in your cart");
   }
-
+  
   const itemIndex = user.cart.findIndex((item) => item.productId == productId);
-
-  if (itemIndex !== -1) {
+  
+  if (itemIndex == -1) {
     user.cart.splice(itemIndex, 1);
+    
+    await user.save();
+    res.status(200).send("Product removed from cart");
   }
-  await user.save();
-  res.status(200).send("Product removed from cart");
+ 
 };
 
 //add product to wish list

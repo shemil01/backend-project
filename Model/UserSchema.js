@@ -14,6 +14,11 @@ const userSchema = new mongoose.Schema({
     required: true, 
   },
   
+  confirmPass: {
+    type: String,
+    // required: true, 
+  },
+  
 });
 
 module.exports = mongoose.model("UserSchema", userSchema);

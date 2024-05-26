@@ -11,8 +11,6 @@ const userAuth = tryCatch(async (req, res, next) => {
     });
   }
 
-//   console.log('Token:', token);
-
     const decoded = jwt.verify(token, process.env.jwt_secret);
     const user = await userSchema.findById(decoded.id);
     if (!user) {
