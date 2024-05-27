@@ -16,7 +16,7 @@ const getAdmin = async (req, res) => {
   if (!passwordMatch) {
     return res.status(403).send("Incorrect password");
   }
-          
+
   const token = jwt.sign(
     { email: admin.email },
     process.env.ACCES_TOKEN_SECRET,

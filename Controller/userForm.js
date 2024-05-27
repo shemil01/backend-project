@@ -29,10 +29,15 @@ const userValidation = joi.object({
 
 //user registration
 const userRegister = async (req, res) => {
-  const { email, name, password,confirmPass } = req.body;
+  const { email, name, password, confirmPass } = req.body;
   // const data = JSON.parse(req.body.data)
-  
-  const validate = await userValidation.validate({ email, name, password ,confirmPass});
+
+  const validate = await userValidation.validate({
+    email,
+    name,
+    password,
+    confirmPass,
+  });
   if (!validate) {
     res.status(400).send("Error");
   }
@@ -42,7 +47,7 @@ const userRegister = async (req, res) => {
   //check user is exist or not
   const userExist = await userSchema.findOne({ email });
   if (userExist) {
-    res.status(401).json({message:"User already exist"});
+    res.status(401).json({ message: "User already exist" });
   }
 
   //password bcrypt
@@ -65,8 +70,8 @@ const userRegister = async (req, res) => {
 
   user.password = undefined;
   res.status(200).json({
-    success:true,
-    message:"Account created successfully"
+    success: true,
+    message: "Account created successfully",
   });
 };
 
@@ -109,7 +114,6 @@ const userLogin = async (req, res) => {
 
 //view product
 const viewProduct = async (req, res) => {
- 
   const product = await productSchema.find();
   if (product.length === 0) {
     res.status(400).json({
@@ -123,7 +127,6 @@ const viewProduct = async (req, res) => {
 
 //view product by Id
 const productById = async (req, res) => {
-  
   const productId = req.params.id;
   const product = await productSchema.findById(productId);
   if (!product) {
@@ -138,7 +141,6 @@ const productById = async (req, res) => {
 //view product by category
 
 const productByCategory = async (req, res) => {
- 
   const category = req.params.id;
   const productInCategory = await productSchema.aggregate([
     {
@@ -160,9 +162,9 @@ const addToCart = async (req, res) => {
   const { token } = req.cookies;
   const { productId } = req.body;
 
-  const valid = await jwt.verify(token,process.env.jwt_secret)
- 
-  const userId = valid.id
+  const valid = await jwt.verify(token, process.env.jwt_secret);
+
+  const userId = valid.id;
 
   let user = await cartSchema.findOne({ userId });
 
@@ -193,9 +195,9 @@ const addToCart = async (req, res) => {
 const getCart = async (req, res) => {
   const { token } = req.cookies;
   // const { userId } = req.params;
-  const valid = await jwt.verify(token,process.env.jwt_secret)
+  const valid = await jwt.verify(token, process.env.jwt_secret);
 
-  const userId = valid.id  
+  const userId = valid.id;
 
   const user = await cartSchema
     .findOne({ userId: userId })
@@ -212,15 +214,16 @@ const getCart = async (req, res) => {
 //decrease product quantity
 const decreaseQuantity = async (req, res) => {
   const { token } = req.cookies;
-  const valid =  jwt.verify(token,process.env.jwt_secret)
-  const userId = valid.id
+  const valid = jwt.verify(token, process.env.jwt_secret);
   const { productId } = req.params;
-  
+  const userId = valid.id;
+
   const user = await cartSchema.findOne({ userId: userId });
   if (!user) {
     res.status(404).send("Product Not Found In Your Cart");
   }
   const itemIndex = user.cart.findIndex((item) => item.productId == productId);
+
   if (itemIndex !== -1) {
     user.cart[itemIndex].quantity -= 1;
   }
@@ -232,26 +235,25 @@ const decreaseQuantity = async (req, res) => {
 
 const removeProduct = async (req, res) => {
   const { token } = req.cookies;
-  const valid =  jwt.verify(token,process.env.jwt_secret)
+  const valid = jwt.verify(token, process.env.jwt_secret);
   const { productId } = req.params;
 
-  const userId = valid.id
+  const userId = valid.id;
 
   const user = await cartSchema.findOne({ userId: userId });
-  
+
   if (!user) {
     res.status(404).send("No product found in your cart");
   }
-  
+
   const itemIndex = user.cart.findIndex((item) => item.productId == productId);
-  
-  if (itemIndex == -1) {
+
+  if (itemIndex !== -1) {
     user.cart.splice(itemIndex, 1);
-    
+
     await user.save();
     res.status(200).send("Product removed from cart");
   }
- 
 };
 
 //add product to wish list
@@ -330,7 +332,8 @@ const removeWishlist = async (req, res) => {
 const order = async (req, res) => {
   try {
     const { token } = req.cookies;
-    const { userId } = req.params;
+    const valid = jwt.verify(token, process.env.jwt_secret);
+    const userId = valid.id;
     const cartData = await cartSchema.findOne({ userId: userId });
 
     if (!cartData || cartData.cart.length === 0) {
@@ -361,8 +364,8 @@ const order = async (req, res) => {
       payment_method_types: ["card"],
       mode: "payment",
       line_items: line_items,
-      success_url: `http://localhost:3010/api/user/success/${userId}`,
-      cancel_url: "http://localhost:3010/api/user/cancell",
+      success_url: "http://localhost:3000/success",
+      cancel_url: "http://localhost:3000",
     });
 
     const sessionId = session.id;
@@ -380,7 +383,8 @@ const order = async (req, res) => {
 const orderSuccess = async (req, res) => {
   const { session, token } = req.cookies;
 
-  const { userId } = req.params;
+  const valid = jwt.verify(token, process.env.jwt_secret);
+  const userId = valid.id;
 
   res.clearCookie("session");
 
