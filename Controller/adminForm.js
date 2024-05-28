@@ -72,13 +72,14 @@ const getCart = async (req, res) => {
 
 const viewProduct = async (req, res) => {
   const { token } = req.cookies;
+  // console.log((req.cookies))
   const product = await productSchema.find();
   if (product.length == 0) {
     res.status(404).send("product is empty");
   } else {
     res.json(product);
   }
-};
+};      
 
 //view product by ID
 
@@ -201,6 +202,7 @@ const deleteProduct = async (req, res) => {
 const orders = async (req, res) => {
   const { token } = req.cookies;
   const { userId } = req.params;
+  console.log(userId)
   const products = await OrderSchema.findOne({ userId: userId });
   if (products.length === 0) {
     res.status(404).json({

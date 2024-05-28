@@ -12,19 +12,20 @@ const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
-const port = process.env.port;
+const port = process.env.PORT 
 
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser()); // Make sure cookieParser is used before your routes
+
 app.use("/api", adminRoute);
 app.use("/api", userRoute);
+
 DbConnect();
 
 app.use(errorHandler);
 
 app.listen(port, () => {
-  console.log(`your app is listening port:${port}`);
+  console.log(`Your app is listening on port: ${port}`);
 });
