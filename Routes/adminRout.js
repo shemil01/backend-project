@@ -56,16 +56,21 @@ adminRoutes.get(
   tryCatch(adminController.getCart)
 ),
   adminRoutes.get(
-    "/admin/orders/:userId",
+    "/admin/orders",
     adminAuth,
     tryCatch(adminController.orders)
+  );
+  adminRoutes.get(
+    "/admin/ordersid/:userId",
+    adminAuth,
+    tryCatch(adminController.ordersById)
   );
 
 adminRoutes.get(
   "/admin/revenue",
   adminAuth,
   tryCatch(adminController.totalRevenue)
-);
+);   
 adminRoutes.get(
   "/admin/totalPurchase",
   adminAuth,

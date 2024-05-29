@@ -201,9 +201,27 @@ const deleteProduct = async (req, res) => {
 //order detailes
 const orders = async (req, res) => {
   const { token } = req.cookies;
-  const { userId } = req.params;
-  console.log(userId)
-  const products = await OrderSchema.findOne({ userId: userId });
+
+  
+  const products = await OrderSchema.find().populate("products.productId");
+
+  if (products.length === 0) {
+    res.status(404).json({
+      success: false,
+      messages: "No orders found",
+    });
+  }
+  res.status(200).json(products);
+};
+
+//seperate order
+const ordersById = async (req, res) => {
+  const { token } = req.cookies;
+  const {userId} = req.params
+console.log(userId)
+  
+  const products = await OrderSchema.findOne({userId:userId}).populate("products.productId");
+
   if (products.length === 0) {
     res.status(404).json({
       success: false,
@@ -253,4 +271,5 @@ module.exports = {
   orders,
   totalRevenue,
   totalPurchase,
+  ordersById
 };
