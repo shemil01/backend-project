@@ -119,6 +119,7 @@ const productByCategory = async (req, res) => {
 const addProduct = async (req, res) => {
   const { token } = req.cookies;
   const data = req.body;
+  
   data.image = req.cloudinaryImageUrl;
   const { name, description, price, image, category } = data;
   const validate = await schema.validate(data);
@@ -184,7 +185,7 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
   const { token } = req.cookies;
   const { id } = req.params;
-  console.log(id);
+  // console.log(id);
   const deleted = await productSchema.findByIdAndDelete(id);
   if (!deleted) {
     return res.status(404).json({
@@ -218,7 +219,7 @@ const orders = async (req, res) => {
 const ordersById = async (req, res) => {
   const { token } = req.cookies;
   const {userId} = req.params
-console.log(userId)
+      
   
   const products = await OrderSchema.findOne({userId:userId}).populate("products.productId");
 

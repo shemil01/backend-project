@@ -412,7 +412,7 @@ const orderSuccess = async (req, res) => {
     userId: Cart.userId,
     totalItems,
     totalPrice,
-    orderId: `ORDID${session}`,
+    orderId: `ORD${session}`,
   });
 
   Cart.cart.forEach((items) => {
