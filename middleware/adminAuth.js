@@ -11,6 +11,7 @@ module.exports = function verifyToken(req, res, next) {
   }
   jwt.verify(token, process.env.ACCES_TOKEN_SECRET, (err, decoded) => {
     if (err) {
+      console.log(err);
       res.status(401).json({
         success: false,
         message: "Un authourized",

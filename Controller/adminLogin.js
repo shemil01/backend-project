@@ -21,7 +21,7 @@ const getAdmin = async (req, res) => {
     { email: admin.email },
     process.env.ACCES_TOKEN_SECRET,
     {
-      expiresIn: "1m",
+      expiresIn: "5m",
     }
   );
   const refreshToken = jwt.sign(
@@ -59,7 +59,7 @@ const generateToken = async (req, res) => {
   );
   res
     .cookie("token", token, {
-      expires: new Date(Date.now() + 60 * 1000),
+      expires: new Date(Date.now() + 60 * 1000*5),
     })
     .send("refresh token generated");
 };

@@ -34,7 +34,7 @@ adminRoutes.get(
   tryCatch(adminController.productByCategory)
 );
 adminRoutes.post(
-  "/admin/product",
+  "/admin/add",
   adminAuth,
   uploadImage,
   tryCatch(adminController.addProduct)

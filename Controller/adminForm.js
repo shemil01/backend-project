@@ -140,7 +140,7 @@ const addProduct = async (req, res) => {
     category: data.category,
     image: req.cloudinaryImageUrl,
   });
-  await newProduct.save();
+  await newProduct.save();      
   res.status(200).send("Product added successfully compleated");
 };
 
