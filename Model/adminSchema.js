@@ -23,4 +23,4 @@ const adminSchema = new mongoos.Schema({
     }
 })
 
-module.exports=mongoos.model("AdminSchema",adminSchema)
+module.exports=mongoos.model("Admin",adminSchema)

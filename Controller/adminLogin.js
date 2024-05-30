@@ -23,7 +23,7 @@ const getAdmin = async (req, res) => {
     process.env.ACCES_TOKEN_SECRET,
     {
       expiresIn: "5m",
-    }
+    } 
   );
   const refreshToken = jwt.sign(
     { email: admin.email },
