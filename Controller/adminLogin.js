@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const adminSchema = require("../Model/AdminSchema");
+const adminSchema = require("../model/AdminSchema");
 
 //admin login
 const getAdmin = async (req, res) => {
@@ -10,7 +10,7 @@ const getAdmin = async (req, res) => {
   if (!admin) {
     return res.status(404).send("Admin not found");
   }
-
+ 
   const passwordMatch = await bcrypt.compare(password, admin.password);
 
   if (!passwordMatch) {
