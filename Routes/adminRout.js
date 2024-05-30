@@ -71,7 +71,7 @@ adminRoutes.get(
   adminAuth,
   tryCatch(adminController.totalRevenue)
 );   
-adminRoutes.get(
+adminRoutes.get(          
   "/admin/totalPurchase",
   adminAuth,
   tryCatch(adminController.totalPurchase)
