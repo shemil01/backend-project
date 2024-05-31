@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 // const adminSchema = require("../model/AdminSchema");
 // const adminSchema=require("../odel/AdminSchema")
-const adminSchema = require("../Model/AdminSchema")
+const adminSchema = require("../Model/AdminSchema.js")
 
 //admin login
 const getAdmin = async (req, res) => {
