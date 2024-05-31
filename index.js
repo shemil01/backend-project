@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser()); // Make sure cookieParser is used before your routes
 
-// app.use("/api", adminRoute);
+app.use("/api", adminRoute);
 app.use("/api", userRoute);
 
 DbConnect();

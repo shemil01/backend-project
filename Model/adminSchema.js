@@ -1,9 +1,9 @@
-const mongoos = require('mongoose')
+const mongoose = require('mongoose')
 
 
 
 
-const adminSchema = new mongoos.Schema({
+const adminSchema = new mongoose.Schema({
 
     email:{
         type:String,
@@ -23,4 +23,4 @@ const adminSchema = new mongoos.Schema({
     }
 })
 
-module.exports=mongoos.model("Admin",adminSchema)
+module.exports=mongoose.model("Admin",adminSchema)
