@@ -2,12 +2,15 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 // const adminSchema = require("../model/AdminSchema");
 // const adminSchema=require("../odel/AdminSchema")
-const adminSchema = require("../Model/AdminSchema.js")
+// const adminSchema = require("../Model/AdminSchema.js")
+const path = require('path');
+const AdminSchema = require(path.resolve(__dirname, '../Model/AdminSchema'));
+
 
 //admin login
 const getAdmin = async (req, res) => {
   const { email, password } = req.body;
-  const admin = await adminSchema.findOne({ email: email });
+  const admin = await AdminSchema.findOne({ email: email });
 
   if (!admin) {
     return res.status(404).send("Admin not found");
