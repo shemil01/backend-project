@@ -1,7 +1,7 @@
 const express = require("express");
 const Controller = require("../Controller/adminLogin");
 const adminController = require("../Controller/adminForm");
-
+const adminSchema = require("../Model/AdminSchema")
 const adminRoutes = express.Router();
 const { tryCatch } = require("../Utils/tryCatch");
 const { uploadImage } = require("../middleware/Cloudinary");

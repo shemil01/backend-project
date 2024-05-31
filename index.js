@@ -9,6 +9,7 @@ const userRoute = require("./Routes/userRout");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const errorHandler = require("./middleware/errorHandler");
+const adminSchema = require("./Model/AdminSchema")
 
 const app = express();
 
