@@ -9,7 +9,7 @@ const userRoute = require("./Routes/userRout");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const errorHandler = require("./middleware/errorHandler");
-const adminSchema = require("./Model/AdminSchema")
+
 
 const app = express();
 
@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser()); // Make sure cookieParser is used before your routes
 
-app.use("/api", adminRoute);
+// app.use("/api", adminRoute);
 app.use("/api", userRoute);
 
 DbConnect();
