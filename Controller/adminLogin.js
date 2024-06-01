@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken")
-const admins = require("../Model/AdminSchema");
+const adminModel = require("../Model/admin")
+
 
 
 
@@ -13,7 +14,7 @@ const AdminRegister = async (req, res) => {
     res.status(400).send("Fill all fields");
   }
   //check user is exist or not
-  const admiExist = await admins.findOne({ email });
+  const admiExist = await adminModel.findOne({ email });
   if (admiExist) {
     res.status(401).json({ message: "User already exist" });
   }
@@ -22,7 +23,7 @@ const AdminRegister = async (req, res) => {
 
   const hashPassword = await bcrypt.hash(String(password), 10);
   //save user
-  const adminDt = await admins.create({
+  const adminDt = await adminModel.create({
     username,
     email,
     password: hashPassword,
@@ -46,7 +47,7 @@ const AdminRegister = async (req, res) => {
 //admin login
 const getAdmin = async (req, res) => {
   const { email, password } = req.body;
-  const admin = await admins.findOne({email:email});
+  const admin = await adminModel.findOne({email:email});
   console.log("admin",admin)         
 
   if (!admin) {
