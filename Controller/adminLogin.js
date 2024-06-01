@@ -3,7 +3,8 @@ const jwt = require("jsonwebtoken");
 // const path = require('path');
 // const AdminSchema = require(path.resolve(__dirname, './model/AdminSchema.js'));
 // const AdminSchema = require("../Model/AdminSchema");
-const AdminSchema = require("../Model/AdminSchema");
+// const AdminSchema = require("../Model/AdminSchema");
+import { AdminSchema } from "../Model/AdminSchema";
 console.log("AdminSchema loaded successfully");
 
 //admin login
