@@ -4,7 +4,7 @@ const mongoos = require('mongoose')
 const connectDb=async function(){
 try{
 
-    mongoos.connect("mongodb+srv://shemil:shemil01@atlascluster.8ivbdk1.mongodb.net//PLASHOE")
+    mongoos.connect("mongodb+srv://shemil:shemil01@atlascluster.8ivbdk1.mongodb.net/PLASHOE")
     .then(()=>{
         console.log("Data base connected");
     })
@@ -14,4 +14,4 @@ try{
 }
     
 }
-module.exports = connectDb
+module.exports = connectDb    
