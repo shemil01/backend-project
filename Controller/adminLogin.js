@@ -3,14 +3,14 @@ const jwt = require("jsonwebtoken");
 // const path = require('path');
 // const AdminSchema = require(path.resolve(__dirname, './model/AdminSchema.js'));
 // const AdminSchema = require("../Model/AdminSchema");
-// const AdminSchema = require("../Model/AdminSchema");
-import { AdminSchema } from "../Model/AdminSchema";
+const adminSchema = require("../Model/AdminSchema");
+// import { AdminSchema } from "../Model/AdminSchema";
 console.log("AdminSchema loaded successfully");
 
 //admin login
 const getAdmin = async (req, res) => {
   const { email, password } = req.body;
-  const admin = await AdminSchema.findOne({ email: email });
+  const admin = await adminSchema.findOne({ email: email });
 
   if (!admin) {
     return res.status(404).send("Admin not found");
