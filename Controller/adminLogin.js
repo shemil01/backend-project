@@ -1,11 +1,10 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const path = require('path');
-const AdminSchema = require(path.resolve(__dirname, './model/AdminSchema.js'));
-
-console.log('AdminSchema loaded successfully');
-
-
+// const path = require('path');
+// const AdminSchema = require(path.resolve(__dirname, './model/AdminSchema.js'));
+// const AdminSchema = require("../Model/AdminSchema");
+const AdminSchema = require("../Model/AdminSchema");
+console.log("AdminSchema loaded successfully");
 
 //admin login
 const getAdmin = async (req, res) => {
@@ -15,7 +14,7 @@ const getAdmin = async (req, res) => {
   if (!admin) {
     return res.status(404).send("Admin not found");
   }
-                                                                 
+
   const passwordMatch = await bcrypt.compare(password, admin.password);
 
   if (!passwordMatch) {
@@ -27,7 +26,7 @@ const getAdmin = async (req, res) => {
     process.env.ACCES_TOKEN_SECRET,
     {
       expiresIn: "5m",
-    } 
+    }
   );
   const refreshToken = jwt.sign(
     { email: admin.email },
@@ -64,7 +63,7 @@ const generateToken = async (req, res) => {
   );
   res
     .cookie("token", token, {
-      expires: new Date(Date.now() + 60 * 1000*5),
+      expires: new Date(Date.now() + 60 * 1000 * 5),
     })
     .send("refresh token generated");
 };
