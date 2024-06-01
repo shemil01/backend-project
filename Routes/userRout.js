@@ -8,7 +8,7 @@ const { uploadImage } = require('../middleware/Cloudinary')
 
 userRoutes.post("/user/register", tryCatch(controller.userRegister))
 userRoutes.post("/user/login",tryCatch(controller.userLogin))
-userRoutes.get("/user/product",tryCatch(controller.viewProduct))
+userRoutes.get("/user/product",tryCatch(controller.viewProduct)) 
 userRoutes.get("/user/productid/:id",tryCatch(controller.productById))
 userRoutes.get("/user/category/:id",tryCatch(controller.productByCategory))
 // userRoutes.post("/user/logout",tryCatch(controller.userLogout))
