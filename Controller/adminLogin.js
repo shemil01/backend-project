@@ -1,16 +1,53 @@
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-// const path = require('path');
-// const AdminSchema = require(path.resolve(__dirname, './model/AdminSchema.js'));
-// const AdminSchema = require("../Model/AdminSchema");
-const adminSchema = require("../Model/AdminSchema");
-// import { AdminSchema } from "../Model/AdminSchema";
-console.log("AdminSchema loaded successfully");
+const jwt = require("jsonwebtoken")
+const admins = require("../Model/AdminSchema");
+
+
+
+//admin register
+const AdminRegister = async (req, res) => {
+  const { email, username, password } = req.body;
+  // const data = JSON.parse(req.body.data)
+
+  if (!(username && email && password )) {
+    res.status(400).send("Fill all fields");
+  }
+  //check user is exist or not
+  const admiExist = await admins.findOne({ email });
+  if (admiExist) {
+    res.status(401).json({ message: "User already exist" });
+  }
+
+  //password bcrypt
+
+  const hashPassword = await bcrypt.hash(String(password), 10);
+  //save user
+  const adminDt = await admins.create({
+    username,
+    email,
+    password: hashPassword,
+  });
+
+  //generate token
+
+  const token = jwt.sign({ id: adminDt._id }, process.env.jwt_secret, {
+    expiresIn: "2h",
+  });
+  // user.token = token;
+  res.cookie("token", token);
+
+  user.password = undefined;
+  res.status(200).json({
+    success: true,
+    message: "Account created successfully",
+  });
+};
 
 //admin login
 const getAdmin = async (req, res) => {
   const { email, password } = req.body;
-  const admin = await adminSchema.findOne({ email: email });
+  const admin = await admins.findOne({email:email});
+  console.log("admin",admin)         
 
   if (!admin) {
     return res.status(404).send("Admin not found");
@@ -69,4 +106,4 @@ const generateToken = async (req, res) => {
     .send("refresh token generated");
 };
 
-module.exports = { getAdmin, generateToken };
+module.exports = { getAdmin, generateToken,AdminRegister };

@@ -6,6 +6,8 @@ const { tryCatch } = require("../Utils/tryCatch");
 const { uploadImage } = require("../middleware/Cloudinary");
 const adminAuth = require("../middleware/adminAuth");
 
+adminRoutes.post("/admin/register", tryCatch(Controller.AdminRegister))
+
 adminRoutes.post("/admin/login", tryCatch(Controller.getAdmin));
 adminRoutes.get(
   "/admin/allusers",
