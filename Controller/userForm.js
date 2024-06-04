@@ -31,7 +31,7 @@ const userValidation = joi.object({
 const userRegister = async (req, res) => {
   const { email, name, password, confirmPass } = req.body;
   // const data = JSON.parse(req.body.data)
-console.log(req.body)
+
   const validate = await userValidation.validate({
     email,
     name,
@@ -108,6 +108,7 @@ const userLogin = async (req, res) => {
   res.cookie("token", token);
   res.status(200).json({
     userData: userData,
+    token:token,
     message: "login successfull",
   });
 };
