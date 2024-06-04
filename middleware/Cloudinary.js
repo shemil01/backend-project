@@ -1,6 +1,8 @@
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 require("dotenv").config({ path: "./Config/.env" });
+const path = require('path');
+const fs = require('fs');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -13,21 +15,18 @@ cloudinary.config({
 const storage = multer.diskStorage({});
 
 // Multer upload configuration
-const upload = multer({
-  storage: storage,
- 
-});
+const upload = multer({ storage: storage });
 
-// Middleware to upload image to Cloudinary
+// Middleware to upload image to Cloudinary or use provided URL
 const uploadImage = (req, res, next) => {
   upload.single("image")(req, res, async (error) => {
-    console.log("model");
     try {
       if (req.file) {
-        console.log("file");
         const result = await cloudinary.uploader.upload(req.file.path);
-        console.log("result");
         req.cloudinaryImageUrl = result.secure_url;
+        fs.unlinkSync(req.file.path); // Delete the local file after uploading
+      } else if (req.body.imageURL) {
+        req.cloudinaryImageUrl = req.body.imageURL;
       }
       next();
     } catch (error) {

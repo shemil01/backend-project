@@ -3,52 +3,46 @@ const jwt = require("jsonwebtoken")
 const adminModel = require("../Model/admin")
 
 
-
-
-//admin register
 const AdminRegister = async (req, res) => {
   const { email, username, password } = req.body;
-  // const data = JSON.parse(req.body.data)
 
-  if (!(username && email && password )) {
-    res.status(400).send("Fill all fields");
-  }
-  //check user is exist or not
-  const admiExist = await adminModel.findOne({ email });
-  if (admiExist) {
-    res.status(401).json({ message: "User already exist" });
+  if (!(username && email && password)) {
+    return res.status(400).send("Fill all fields");
   }
 
-  //password bcrypt
+  // Check if user already exists
+  const adminExist = await adminModel.findOne({ email });
+  if (adminExist) {
+    return res.status(401).json({ message: "User already exists" });
+  }
 
+  // Password encryption
   const hashPassword = await bcrypt.hash(String(password), 10);
-  //save user
+
+  // Save user
   const adminDt = await adminModel.create({
     username,
     email,
     password: hashPassword,
   });
 
-  //generate token
-
+  // Generate token
   const token = jwt.sign({ id: adminDt._id }, process.env.jwt_secret, {
     expiresIn: "2h",
   });
-  // user.token = token;
   res.cookie("token", token);
 
-  user.password = undefined;
-  res.status(200).json({
+  adminDt.password = undefined;  // Corrected this line
+  return res.status(200).json({
     success: true,
     message: "Account created successfully",
   });
 };
 
-//admin login
+// admin login
 const getAdmin = async (req, res) => {
   const { email, password } = req.body;
-  const admin = await adminModel.findOne({email:email});
-  console.log("admin",admin)         
+  const admin = await adminModel.findOne({ email });
 
   if (!admin) {
     return res.status(404).send("Admin not found");
@@ -64,7 +58,7 @@ const getAdmin = async (req, res) => {
     { email: admin.email },
     process.env.ACCES_TOKEN_SECRET,
     {
-      expiresIn: "5m",
+      expiresIn: "1h",
     }
   );
   const refreshToken = jwt.sign(
@@ -75,36 +69,40 @@ const getAdmin = async (req, res) => {
     }
   );
   res.cookie("token", token, {
-    expires: new Date(Date.now() + 60 * 1000),
+    expires: new Date(Date.now() + 60 * 60 * 1000),  // Adjusted expiration time
   });
   res.cookie("refreshToken", refreshToken);
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
-    message: "Login succesfully compleated",
+    message: "Login successfully completed",
   });
 };
 
-//refresh token
-
+// refresh token
 const generateToken = async (req, res) => {
-  const tokens = req.cookies.refreshToken;
-  if (!tokens) {
-    res.status(401).send("login your accound");
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    return res.status(401).send("Login your account");
   }
-  const decoded = jwt.verify(tokens, process.env.REFRESH_TOKEN_SECRET);
 
-  const token = jwt.sign(
-    { email: decoded.email },
-    process.env.ACCES_TOKEN_SECRET,
-    {
-      expiresIn: "1m",
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send("Invalid refresh token");
     }
-  );
-  res
-    .cookie("token", token, {
-      expires: new Date(Date.now() + 60 * 1000 * 5),
-    })
-    .send("refresh token generated");
+
+    const token = jwt.sign(
+      { email: decoded.email },
+      process.env.ACCES_TOKEN_SECRET,
+      {
+        expiresIn: "1h",  // Adjusted expiration time
+      }
+    );
+    return res
+      .cookie("token", token, {
+        expires: new Date(Date.now() + 60 * 60 * 1000),  // Adjusted expiration time
+      })
+      .send("Refresh token generated");
+  });
 };
 
-module.exports = { getAdmin, generateToken,AdminRegister };
+module.exports = { getAdmin, generateToken, AdminRegister };

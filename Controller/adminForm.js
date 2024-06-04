@@ -29,6 +29,7 @@ const schema = joi.object({
 const allUsers = async (req, res) => {
   const { token } = req.cookies;
   const users = await UserSchema.find();
+  // console.log(users)
   if (users.length === 0) {
     res.status(404).json({
       success: true,
@@ -119,29 +120,35 @@ const productByCategory = async (req, res) => {
 const addProduct = async (req, res) => {
   const { token } = req.cookies;
   const data = req.body;
-  
   data.image = req.cloudinaryImageUrl;
-  const { name, description, price, image, category } = data;
-  const validate = await schema.validate(data);
-  if (!validate) {
-    res.status(400).send("Product not validated");
-  }
-  const existingProduct = await productSchema.findOne({ name: name });
-  if (existingProduct) {
-    return res.status(400).json({
-      success: false,
-      message: "Product with same name is already exist",
-    });
-  }
 
-  const newProduct = await new productSchema({
-    name: data.name,
-    price: data.price,
-    category: data.category,
-    image: req.cloudinaryImageUrl,
-  });
-  await newProduct.save();      
-  res.status(200).send("Product added successfully compleated");
+  const { name, description, price, image, category } = data;
+
+ 
+    const validate = await schema.validate(data);
+    if (!validate) {
+      return res.status(400).send("Product not validated");
+    }
+
+    const existingProduct = await productSchema.findOne({ name: name });
+    if (existingProduct) {
+      return res.status(400).json({
+        success: false,
+        message: "Product with same name already exists",
+      });
+    }
+
+    const newProduct = new productSchema({
+      name,
+      description,
+      price,
+      category,
+      image,
+    });
+
+    await newProduct.save();
+    res.status(200).send("Product added successfully");
+
 };
 
 //update product
