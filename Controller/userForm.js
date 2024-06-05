@@ -167,6 +167,20 @@ const addToCart = async (req, res) => {
   const { token } = req.cookies;
   const { productId } = req.body;
 
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: "No token provided",
+    });
+  }
+
+  if (!productId) {
+    return res.status(400).json({
+      success: false,
+      message: "No product ID provided",
+    });
+  }
   const valid = await jwt.verify(token, process.env.jwt_secret);
 
   const userId = valid.id;
@@ -180,7 +194,7 @@ const addToCart = async (req, res) => {
     });
   } else {
     const itemIndex = user.cart.findIndex(
-      (item) => item.productId == productId
+      (item) => item.productId.toString() === productId
     );
 
     if (itemIndex !== -1) {
