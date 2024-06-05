@@ -374,8 +374,8 @@ const order = async (req, res) => {
       payment_method_types: ["card"],
       mode: "payment",
       line_items: line_items,
-      success_url: "http://localhost:3000/success",
-      cancel_url: "http://localhost:3000",
+      success_url: "https://react-e-commerce-project-eight.vercel.app/success",
+      cancel_url: "https://react-e-commerce-project-eight.vercel.app",
     });
 
     const sessionId = session.id;
