@@ -132,7 +132,7 @@ const addProduct = async (req, res) => {
 
     const existingProduct = await productSchema.findOne({ name: name });
     if (existingProduct) {
-      return res.status(400).json({
+      return res.status(400).json({                                                                                  
         success: false,
         message: "Product with same name already exists",
       });
@@ -226,18 +226,19 @@ const orders = async (req, res) => {
 const ordersById = async (req, res) => {
   const { token } = req.cookies;
   const {userId} = req.params
+  console.log(userId)
       
   
   const products = await OrderSchema.findOne({userId:userId}).populate("products.productId");
 
   if (products.length === 0) {
-    res.status(404).json({
+    res.status(404).json({       
       success: false,
       messages: "No orders found",
-    });
+    });                    
   }
   res.status(200).json(products);
-};
+}; 
 
 //total product purchased
 const totalPurchase = async (req, res) => {

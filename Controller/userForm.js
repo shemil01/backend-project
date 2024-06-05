@@ -108,7 +108,7 @@ const userLogin = async (req, res) => {
   res.cookie("token", token);
   res.status(200).json({
     userData: userData,
-    token:token,
+    token: token,
     message: "login successfull",
   });
 };
@@ -337,11 +337,14 @@ const order = async (req, res) => {
     const userId = valid.id;
     const cartData = await cartSchema.findOne({ userId: userId });
 
+    // Check if the cart is empty
     if (!cartData || cartData.cart.length === 0) {
-      return res.status(200).send("No product found in your cart");
+      return res.status(400).send("No product found in your cart");
     }
 
     const line_items = [];
+
+    // Loop through the cart items and create line items for Stripe
     for (const cartItem of cartData.cart) {
       const product = await productSchema.findById(cartItem.productId);
       if (!product) {
@@ -349,6 +352,7 @@ const order = async (req, res) => {
           .status(404)
           .send(`Product with ID ${cartItem.productId} not found`);
       }
+
       line_items.push({
         price_data: {
           currency: "inr",
@@ -358,8 +362,9 @@ const order = async (req, res) => {
           unit_amount: Math.round(product.price * 100),
         },
         quantity: cartItem.quantity,
-      });
+      });            
     }
+
     // Create Stripe session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -372,10 +377,18 @@ const order = async (req, res) => {
     const sessionId = session.id;
     const sessionUrl = session.url;
 
+    // Set session cookie and send session URL
     res.cookie("session", sessionId);
     res.send(sessionUrl);
   } catch (error) {
     console.error(error);
+
+    // Handle specific JWT errors
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).send("Invalid token signature");
+    }
+
+    // General error handling
     res.status(500).send("An error occurred while processing your order");
   }
 };

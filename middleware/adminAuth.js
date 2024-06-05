@@ -8,7 +8,7 @@ module.exports = function verifyToken(req, res, next) {
       return res.status(401).send("Login your account");
     }
     return res.redirect("/api/admin/refresh-token");
-  }
+  }  
 
   jwt.verify(token, process.env.ACCES_TOKEN_SECRET, (err, decoded) => {
     if (err) {
