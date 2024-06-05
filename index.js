@@ -15,8 +15,7 @@ const app = express();
 
 const port = process.env.PORT 
 
-app.use(cors({ origin: "https://localhost:3000", credentials: true }));
-// app.use(cors({ origin: "https://react-e-commerce-project-eight.vercel.app", credentials: true }));
+app.use(cors({ origin: "https://react-e-commerce-project-eight.vercel.app", credentials: true }));
 app.use(express.json());   
 app.use(bodyParser.json());
 app.use(cookieParser()); // Make sure cookieParser is used before your routes
