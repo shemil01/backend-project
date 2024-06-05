@@ -69,11 +69,12 @@ const getAdmin = async (req, res) => {
     }
   );
   res.cookie("token", token, {
-    expires: new Date(Date.now() + 60 * 60 * 1000),  // Adjusted expiration time
+    httpOnly: true,
+    secure: true,
+    sameSite: 'None'
   });
   res.cookie("refreshToken", refreshToken);
   return res.status(200).json({
-    success: true,
     admin:admin,
     token:token,
     refreshToken:refreshToken,
