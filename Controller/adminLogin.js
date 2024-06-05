@@ -75,6 +75,8 @@ const getAdmin = async (req, res) => {
   return res.status(200).json({
     success: true,
     admin:admin,
+    token:token,
+    refreshToken:refreshToken,
     message: "Login successfully completed",
   });
 };
