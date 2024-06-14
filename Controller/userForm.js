@@ -221,6 +221,7 @@ const getCart = async (req, res) => {
   const user = await cartSchema
     .findOne({ userId: userId })
     .populate("cart.productId");
+    console.log(user)
   if (!user || user.cart.length === 0) {
     res.status(404).json({
       success: false,
@@ -230,6 +231,8 @@ const getCart = async (req, res) => {
 
   res.status(200).json(user);
 };
+
+
 //decrease product quantity
 const decreaseQuantity = async (req, res) => {
   const { token } = req.cookies;
