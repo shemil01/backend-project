@@ -231,6 +231,21 @@ const getCart = async (req, res) => {
 
   res.status(200).json(user);
 };
+//increse product quantity
+const increseQuantity = async(req,res)=>{
+  const { token } = req.cookies;
+  const valid = jwt.verify(token, process.env.jwt_secret);
+  const { productId } = req.params;
+  const userId = valid.id;
+
+  const user = await cartSchema.findOne({userId:userId})
+  const itemIndex = user.cart.findIndex((item)=> item.productId == productId)
+  if(itemIndex !== -1){
+    user.cart[itemIndex].quantity += 1;
+  }
+  await user.save();
+  res.status(200).send("Product quantity decreased");
+}
 
 
 //decrease product quantity
