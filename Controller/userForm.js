@@ -244,7 +244,7 @@ const increseQuantity = async(req,res)=>{
     user.cart[itemIndex].quantity += 1;
   }
   await user.save();
-  res.status(200).send("Product quantity decreased");
+  res.status(200).send("Product quantity increased");
 }
 
 
@@ -511,4 +511,5 @@ module.exports = {
   order,
   orderSuccess,
   orderRecords,
+  increseQuantity
 };
